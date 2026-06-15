@@ -1,0 +1,33 @@
+---
+# Service for MongoDB
+# Provides stable network endpoint for MongoDB access within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+  namespace: movies-db
+  labels:
+    app: mongodb
+    component: database
+  annotations:
+    description: "ClusterIP service for MongoDB database access"
+spec:
+  # ClusterIP: Service is only accessible within the cluster
+  type: ClusterIP
+  # Headless service for StatefulSet (uncomment clusterIP: None for headless)
+  # clusterIP: None
+  ports:
+    - port: 27017
+      targetPort: 27017
+      protocol: TCP
+      name: mongodb
+  selector:
+    app: mongodb
+    component: database
+  # Session affinity ensures requests from same client go to same pod
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+# Made with Bob

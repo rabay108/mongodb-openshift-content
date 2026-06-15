@@ -1,0 +1,159 @@
+---
+# ArgoCD AppProject for MongoDB Content Database
+# This AppProject defines security policies, allowed resources, and RBAC for the MongoDB deployment
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: mongodb-content
+  namespace: openshift-gitops
+  labels:
+    app: mongodb-content
+    environment: production
+  annotations:
+    description: "AppProject for MongoDB Content Database deployment on OpenShift"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  # Project description
+  description: "MongoDB Content Database - Manages deployment of MongoDB with movies schema and sample data"
+  
+  # Source repositories allowed for this project
+  sourceRepos:
+    # Allow the specific GitHub repository
+    - https://github.com/rabay108/mongodb-openshift-content.git
+    # Optionally allow any repository (use with caution in production)
+    # - '*'
+  
+  # Destination clusters and namespaces
+  destinations:
+    # Allow deployment to movies-db namespace in the local cluster
+    - namespace: movies-db
+      server: https://kubernetes.default.svc
+      name: in-cluster
+    # Allow deployment to openshift-gitops namespace for ArgoCD resources
+    - namespace: openshift-gitops
+      server: https://kubernetes.default.svc
+      name: in-cluster
+  
+  # Cluster resource whitelist - defines which cluster-scoped resources can be managed
+  clusterResourceWhitelist:
+    # Allow namespace creation
+    - group: ''
+      kind: Namespace
+    # Allow custom resource definitions if needed
+    - group: 'apiextensions.k8s.io'
+      kind: CustomResourceDefinition
+  
+  # Namespace resource whitelist - defines which namespace-scoped resources can be managed
+  namespaceResourceWhitelist:
+    # Core resources
+    - group: ''
+      kind: ConfigMap
+    - group: ''
+      kind: Secret
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: PersistentVolumeClaim
+    - group: ''
+      kind: Pod
+    - group: ''
+      kind: ServiceAccount
+    
+    # Apps resources
+    - group: 'apps'
+      kind: StatefulSet
+    - group: 'apps'
+      kind: Deployment
+    - group: 'apps'
+      kind: ReplicaSet
+    
+    # Batch resources (if needed for jobs)
+    - group: 'batch'
+      kind: Job
+    - group: 'batch'
+      kind: CronJob
+    
+    # RBAC resources
+    - group: 'rbac.authorization.k8s.io'
+      kind: Role
+    - group: 'rbac.authorization.k8s.io'
+      kind: RoleBinding
+    
+    # Networking resources
+    - group: 'networking.k8s.io'
+      kind: NetworkPolicy
+    - group: 'networking.k8s.io'
+      kind: Ingress
+    
+    # OpenShift specific resources
+    - group: 'route.openshift.io'
+      kind: Route
+    - group: 'security.openshift.io'
+      kind: SecurityContextConstraints
+  
+  # Namespace resource blacklist - explicitly deny certain resources (optional)
+  # namespaceResourceBlacklist:
+  #   - group: ''
+  #     kind: ResourceQuota
+  
+  # Roles for this project - defines RBAC policies
+  roles:
+    # Admin role - full access to the project
+    - name: admin
+      description: "Full administrative access to MongoDB Content project"
+      policies:
+        - p, proj:mongodb-content:admin, applications, *, mongodb-content/*, allow
+        - p, proj:mongodb-content:admin, repositories, *, *, allow
+        - p, proj:mongodb-content:admin, clusters, *, *, allow
+      groups:
+        - mongodb-content-admins
+        - system:cluster-admins
+    
+    # Developer role - can sync and view applications
+    - name: developer
+      description: "Developer access - can sync and view applications"
+      policies:
+        - p, proj:mongodb-content:developer, applications, get, mongodb-content/*, allow
+        - p, proj:mongodb-content:developer, applications, sync, mongodb-content/*, allow
+        - p, proj:mongodb-content:developer, applications, override, mongodb-content/*, allow
+        - p, proj:mongodb-content:developer, repositories, get, *, allow
+      groups:
+        - mongodb-content-developers
+    
+    # Read-only role - can only view applications
+    - name: readonly
+      description: "Read-only access to view applications and their status"
+      policies:
+        - p, proj:mongodb-content:readonly, applications, get, mongodb-content/*, allow
+        - p, proj:mongodb-content:readonly, repositories, get, *, allow
+      groups:
+        - mongodb-content-viewers
+  
+  # Orphaned resources monitoring
+  orphanedResources:
+    # Warn about orphaned resources
+    warn: true
+    # Ignore certain resources from orphaned resource detection
+    ignore:
+      - group: ''
+        kind: ConfigMap
+        name: kube-root-ca.crt
+      - group: ''
+        kind: Secret
+        name: openshift-gitops-*
+  
+  # Sync windows - define when syncs are allowed (optional)
+  # syncWindows:
+  #   - kind: allow
+  #     schedule: '0 0 * * *'
+  #     duration: 1h
+  #     applications:
+  #       - mongodb-content-app
+  #     manualSync: true
+  
+  # Signature keys for commit signature verification (optional)
+  # signatureKeys:
+  #   - keyID: <GPG_KEY_ID>
+
+# Made with Bob

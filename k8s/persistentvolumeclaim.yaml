@@ -1,0 +1,27 @@
+---
+# PersistentVolumeClaim for MongoDB Data Storage
+# Requests 10Gi of storage for MongoDB data persistence
+# Uses dynamic provisioning with default storage class
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  namespace: movies-db
+  labels:
+    app: mongodb
+    component: storage
+  annotations:
+    description: "Persistent storage for MongoDB data directory"
+spec:
+  # ReadWriteOnce: volume can be mounted as read-write by a single node
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # 10Gi storage for MongoDB data, indexes, and logs
+      storage: 10Gi
+  # Uncomment and specify storageClassName if not using default
+  # storageClassName: standard
+  # For OpenShift, you might use: gp2, gp3, or ocs-storagecluster-ceph-rbd
+
+# Made with Bob

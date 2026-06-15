@@ -1,0 +1,15 @@
+---
+# Namespace for MongoDB Movies Database
+# This namespace isolates the MongoDB deployment and related resources
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: movies-db
+  labels:
+    app: mongodb
+    environment: production
+    purpose: movies-database
+  annotations:
+    description: "Namespace for MongoDB movies database deployment"
+
+# Made with Bob

@@ -1,0 +1,119 @@
+---
+# StatefulSet for MongoDB
+# Provides stable network identity and persistent storage for MongoDB
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: movies-db
+  labels:
+    app: mongodb
+    component: database
+spec:
+  serviceName: mongodb-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+      component: database
+  template:
+    metadata:
+      labels:
+        app: mongodb
+        component: database
+    spec:
+      # Init container to set up initialization scripts
+      initContainers:
+        - name: init-scripts
+          image: busybox:1.36
+          command: ['sh', '-c']
+          args:
+            - |
+              echo "Copying initialization scripts..."
+              cp /configmap-scripts/* /docker-entrypoint-initdb.d/
+              chmod +x /docker-entrypoint-initdb.d/*
+              echo "Scripts copied successfully"
+          volumeMounts:
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+            - name: mongodb-init-configmap
+              mountPath: /configmap-scripts
+      containers:
+        - name: mongodb
+          # MongoDB 7.0 - latest stable version
+          image: mongo:7.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+              name: mongodb
+              protocol: TCP
+          # Environment variables for MongoDB authentication
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: mongodb-root-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: mongodb-root-password
+            - name: MONGO_INITDB_DATABASE
+              value: "moviesdb"
+          # Resource limits and requests
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+          # Volume mounts
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+          # Liveness probe - checks if MongoDB is running
+          livenessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          # Readiness probe - checks if MongoDB is ready to accept connections
+          readinessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+      # Volumes
+      volumes:
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
+        - name: init-scripts
+          emptyDir: {}
+        - name: mongodb-init-configmap
+          configMap:
+            name: mongodb-init-scripts
+            defaultMode: 0755
+      # Security context for OpenShift compatibility
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsNonRoot: true
+
+# Made with Bob

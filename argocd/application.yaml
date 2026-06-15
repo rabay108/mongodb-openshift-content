@@ -1,0 +1,86 @@
+---
+# ArgoCD Application for MongoDB Content Database
+# This Application manifest defines how ArgoCD should deploy and manage the MongoDB deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mongodb-content-app
+  namespace: openshift-gitops
+  labels:
+    app: mongodb-content-app
+    environment: production
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  # Project reference
+  project: mongodb-content
+  
+  # Source repository configuration
+  source:
+    # GitHub repository URL
+    repoURL: https://github.com/rabay108/mongodb-openshift-content.git
+    # Target branch
+    targetRevision: main
+    # Path to Kubernetes manifests
+    path: k8s
+    
+  # Destination cluster and namespace
+  destination:
+    # In-cluster deployment
+    server: https://kubernetes.default.svc
+    # Target namespace from namespace.yaml
+    namespace: movies-db
+  
+  # Sync policy configuration
+  syncPolicy:
+    # Automated sync configuration
+    automated:
+      # Automatically sync when changes are detected in Git
+      prune: true
+      # Automatically sync when application is out of sync
+      selfHeal: true
+      # Allow empty resources
+      allowEmpty: false
+    
+    # Sync options for OpenShift compatibility
+    syncOptions:
+      # Create namespace if it doesn't exist
+      - CreateNamespace=true
+      # Validate resources before applying
+      - Validate=true
+      # Use server-side apply for better conflict resolution
+      - ServerSideApply=true
+      # Respect ignore differences
+      - RespectIgnoreDifferences=true
+      # Apply out of sync only
+      - ApplyOutOfSyncOnly=true
+    
+    # Retry configuration for failed syncs
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Ignore differences in certain fields
+  ignoreDifferences:
+    # Ignore differences in replica count (for manual scaling)
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/replicas
+    # Ignore differences in PVC status
+    - group: ""
+      kind: PersistentVolumeClaim
+      jsonPointers:
+        - /status
+    # Ignore differences in Service status
+    - group: ""
+      kind: Service
+      jsonPointers:
+        - /status
+
+# Made with Bob
