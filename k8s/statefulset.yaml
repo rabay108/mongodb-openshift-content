@@ -40,8 +40,8 @@ spec:
               mountPath: /configmap-scripts
       containers:
         - name: mongodb
-          # Bitnami MongoDB 8.3 - optimized for Kubernetes/OpenShift
-          image: docker.io/bitnami/mongodb:8.3
+          # Bitnami MongoDB latest - optimized for Kubernetes/OpenShift
+          image: docker.io/bitnami/mongodb:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 27017
