@@ -40,26 +40,26 @@ spec:
               mountPath: /configmap-scripts
       containers:
         - name: mongodb
-          # MongoDB 7.0 - latest stable version
-          image: mongo:7.0
+          # Bitnami MongoDB 8.3 - optimized for Kubernetes/OpenShift
+          image: docker.io/bitnami/mongodb:8.3
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 27017
               name: mongodb
               protocol: TCP
-          # Environment variables for MongoDB authentication
+          # Environment variables for MongoDB authentication (Bitnami format)
           env:
-            - name: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGODB_ROOT_USER
               valueFrom:
                 secretKeyRef:
                   name: mongodb-secret
                   key: mongodb-root-username
-            - name: MONGO_INITDB_ROOT_PASSWORD
+            - name: MONGODB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mongodb-secret
                   key: mongodb-root-password
-            - name: MONGO_INITDB_DATABASE
+            - name: MONGODB_DATABASE
               value: "moviesdb"
           # Resource limits and requests
           resources:
@@ -110,10 +110,10 @@ spec:
           configMap:
             name: mongodb-init-scripts
             defaultMode: 0755
-      # Security context for OpenShift compatibility
+      # Security context for OpenShift compatibility (Bitnami uses UID 1001)
       securityContext:
-        fsGroup: 999
-        runAsUser: 999
+        fsGroup: 1001
+        runAsUser: 1001
         runAsNonRoot: true
 
 # Made with Bob
