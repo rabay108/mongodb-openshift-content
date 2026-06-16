@@ -22,7 +22,7 @@ This ArgoCD configuration automates the deployment and management of the MongoDB
 
 - **AppProject**: `mongodb-content` - Defines security policies and RBAC
 - **Application**: `mongodb-content-app` - Manages the MongoDB deployment
-- **Target Namespace**: `movies-db`
+- **Target Namespace**: `content-db` (flexible schema for Movies, Books, Music)
 - **Source Repository**: https://github.com/rabay108/mongodb-openshift-content.git
 - **Sync Policy**: Automated with self-healing enabled
 
@@ -78,7 +78,7 @@ Ensure your cluster has sufficient resources:
 │                                      │                      │
 │                                      ▼                      │
 │  ┌────────────────────────────────────────────────────┐    │
-│  │            movies-db namespace                      │    │
+│  │            content-db namespace                     │    │
 │  │                                                     │    │
 │  │  ┌──────────┐  ┌─────────┐  ┌────────────────┐   │    │
 │  │  │ Secret   │  │ConfigMap│  │      PVC       │   │    │
@@ -313,25 +313,25 @@ oc get application mongodb-content-app -n openshift-gitops -o jsonpath='{.status
 
 ```bash
 # Check if namespace is created
-oc get namespace movies-db
+oc get namespace content-db
 
-# Check all resources in movies-db namespace
-oc get all -n movies-db
+# Check all resources in content-db namespace
+oc get all -n content-db
 
 # Check PVC status
-oc get pvc -n movies-db
+oc get pvc -n content-db
 
 # Check pod status
-oc get pods -n movies-db
+oc get pods -n content-db
 
 # Wait for pod to be ready
-oc wait --for=condition=ready pod -l app=mongodb -n movies-db --timeout=300s
+oc wait --for=condition=ready pod -l app=mongodb -n content-db --timeout=300s
 
 # Check pod logs
-oc logs -n movies-db mongodb-0 -c mongodb
+oc logs -n content-db mongodb-0 -c mongodb
 
 # Check init container logs
-oc logs -n movies-db mongodb-0 -c init-scripts
+oc logs -n content-db mongodb-0 -c init-scripts
 ```
 
 ## ✅ Verification
@@ -340,10 +340,10 @@ oc logs -n movies-db mongodb-0 -c init-scripts
 
 ```bash
 # Connect to MongoDB and verify database
-oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin
+oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin
 
 # Inside mongosh, run:
-use moviesdb
+use contentdb
 show collections
 db.movies.countDocuments()  // Should return 10
 db.movies.getIndexes()      // Should show 5 indexes
@@ -365,10 +365,10 @@ oc get application mongodb-content-app -n openshift-gitops -o yaml | grep -A 5 "
 
 ```bash
 # Port forward to MongoDB service
-oc port-forward -n movies-db svc/mongodb-service 27017:27017 &
+oc port-forward -n content-db svc/mongodb-service 27017:27017 &
 
 # In another terminal, connect using mongosh
-mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/moviesdb?authSource=admin"
+mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/contentdb?authSource=admin"
 
 # Run a test query
 db.movies.find({ rating: { $gt: 8.5 } }, { movieName: 1, year: 1, rating: 1 })
@@ -378,7 +378,7 @@ db.movies.find({ rating: { $gt: 8.5 } }, { movieName: 1, year: 1, rating: 1 })
 
 ```bash
 # Check all resources are healthy
-oc get all,pvc,secret,configmap -n movies-db
+oc get all,pvc,secret,configmap -n content-db
 
 # Expected resources:
 # - StatefulSet: mongodb (1/1 ready)
@@ -416,7 +416,7 @@ argocd app sync mongodb-content-app
 oc logs -n openshift-gitops -l app.kubernetes.io/name=argocd-application-controller -f
 
 # View specific application events
-oc get events -n movies-db --sort-by='.lastTimestamp'
+oc get events -n content-db --sort-by='.lastTimestamp'
 ```
 
 ### Refresh Application
@@ -462,7 +462,7 @@ oc delete application mongodb-content-app -n openshift-gitops
 oc delete appproject mongodb-content -n openshift-gitops
 
 # Verify namespace is deleted
-oc get namespace movies-db
+oc get namespace content-db
 ```
 
 ## 🐛 Troubleshooting
@@ -495,18 +495,18 @@ oc patch application mongodb-content-app -n openshift-gitops --type merge -p '{"
 
 ```bash
 # Check pod status
-oc get pods -n movies-db
+oc get pods -n content-db
 
 # Check pod events
-oc describe pod mongodb-0 -n movies-db
+oc describe pod mongodb-0 -n content-db
 
 # Check pod logs
-oc logs -n movies-db mongodb-0 -c mongodb
-oc logs -n movies-db mongodb-0 -c init-scripts
+oc logs -n content-db mongodb-0 -c mongodb
+oc logs -n content-db mongodb-0 -c init-scripts
 
 # Check PVC status
-oc get pvc -n movies-db
-oc describe pvc mongodb-pvc -n movies-db
+oc get pvc -n content-db
+oc describe pvc mongodb-pvc -n content-db
 ```
 
 ### Repository Connection Issues
@@ -530,7 +530,7 @@ oc get application mongodb-content-app -n openshift-gitops -o jsonpath='{.spec.s
 
 ### Namespace Not Created
 
-**Problem**: `movies-db` namespace is not created
+**Problem**: `content-db` namespace is not created
 
 **Solutions**:
 
@@ -539,7 +539,7 @@ oc get application mongodb-content-app -n openshift-gitops -o jsonpath='{.spec.s
 oc get application mongodb-content-app -n openshift-gitops -o jsonpath='{.spec.syncPolicy.syncOptions}'
 
 # Manually create namespace if needed
-oc create namespace movies-db
+oc create namespace content-db
 
 # Re-sync application
 oc patch application mongodb-content-app -n openshift-gitops --type merge -p '{"operation":{"initiatedBy":{"username":"admin"},"sync":{"revision":"main"}}}'
@@ -556,7 +556,7 @@ oc patch application mongodb-content-app -n openshift-gitops --type merge -p '{"
 oc describe appproject mongodb-content -n openshift-gitops
 
 # Verify ArgoCD service account has necessary permissions
-oc get rolebinding -n movies-db | grep gitops
+oc get rolebinding -n content-db | grep gitops
 
 # Grant additional permissions if needed (cluster-admin should have all permissions)
 oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller
@@ -570,21 +570,21 @@ oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:opens
 
 ```bash
 # Check pod status and events
-oc describe pod mongodb-0 -n movies-db
+oc describe pod mongodb-0 -n content-db
 
 # Common issues:
 # 1. PVC not bound - check storage class
 oc get storageclass
-oc get pvc -n movies-db
+oc get pvc -n content-db
 
 # 2. Resource limits - check if cluster has enough resources
 oc describe node | grep -A 5 "Allocated resources"
 
 # 3. Image pull issues - check image pull status
-oc get events -n movies-db | grep -i pull
+oc get events -n content-db | grep -i pull
 
 # 4. Init container failed - check init container logs
-oc logs -n movies-db mongodb-0 -c init-scripts
+oc logs -n content-db mongodb-0 -c init-scripts
 ```
 
 ### ArgoCD UI Not Accessible
@@ -621,10 +621,10 @@ NEW_PASSWORD=$(openssl rand -base64 32)
 oc create secret generic mongodb-secret \
   --from-literal=mongodb-root-username=admin \
   --from-literal=mongodb-root-password="$NEW_PASSWORD" \
-  --dry-run=client -o yaml | oc apply -f - -n movies-db
+  --dry-run=client -o yaml | oc apply -f - -n content-db
 
 # Restart MongoDB pod to use new password
-oc delete pod mongodb-0 -n movies-db
+oc delete pod mongodb-0 -n content-db
 
 # Update the secret in Git repository
 echo -n "$NEW_PASSWORD" | base64
@@ -673,7 +673,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: mongodb-network-policy
-  namespace: movies-db
+  namespace: content-db
 spec:
   podSelector:
     matchLabels:
@@ -790,7 +790,7 @@ oc port-forward -n openshift-gitops svc/openshift-gitops-server-metrics 8083:808
 # Access Prometheus metrics at http://localhost:8083/metrics
 
 # Monitor MongoDB metrics
-oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin --eval "db.serverStatus()"
+oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin --eval "db.serverStatus()"
 ```
 
 ## 📚 Additional Resources
@@ -805,7 +805,7 @@ oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd
 For issues or questions:
 1. Check the [Troubleshooting](#troubleshooting) section
 2. Review ArgoCD logs: `oc logs -n openshift-gitops -l app.kubernetes.io/name=argocd-application-controller`
-3. Check MongoDB logs: `oc logs -n movies-db mongodb-0`
+3. Check MongoDB logs: `oc logs -n content-db mongodb-0`
 4. Open an issue in the GitHub repository
 
 ---

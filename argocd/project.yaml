@@ -26,8 +26,8 @@ spec:
   
   # Destination clusters and namespaces
   destinations:
-    # Allow deployment to movies-db namespace in the local cluster
-    - namespace: movies-db
+    # Allow deployment to content-db namespace in the local cluster
+    - namespace: content-db
       server: https://kubernetes.default.svc
       name: in-cluster
     # Allow deployment to openshift-gitops namespace for ArgoCD resources
