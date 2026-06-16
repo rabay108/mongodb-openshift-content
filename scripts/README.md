@@ -35,7 +35,7 @@ chmod +x reload-data.sh
 
 - `kubectl` CLI installed and configured
 - Access to the OpenShift/Kubernetes cluster
-- MongoDB pod running in `movies-db` namespace
+- MongoDB pod running in `content-db` namespace
 - Pod name: `mongodb-0`
 
 ## Manual Reload (Alternative)
@@ -44,7 +44,7 @@ If you prefer to reload data manually, follow these steps:
 
 ### Step 1: Connect to MongoDB Pod
 ```bash
-kubectl exec -it mongodb-0 -n movies-db -- mongosh moviesdb
+kubectl exec -it mongodb-0 -n content-db -- mongosh contentdb
 ```
 
 ### Step 2: Backup Existing Data (Optional)
@@ -62,13 +62,13 @@ db.movies.drop();
 ### Step 4: Exit and Reload Scripts
 ```bash
 exit
-kubectl exec mongodb-0 -n movies-db -- mongosh < /docker-entrypoint-initdb.d/init-schema.js
-kubectl exec mongodb-0 -n movies-db -- mongosh < /docker-entrypoint-initdb.d/sample-data.js
+kubectl exec mongodb-0 -n content-db -- mongosh < /docker-entrypoint-initdb.d/init-schema.js
+kubectl exec mongodb-0 -n content-db -- mongosh < /docker-entrypoint-initdb.d/sample-data.js
 ```
 
 ### Step 5: Verify
 ```bash
-kubectl exec mongodb-0 -n movies-db -- mongosh moviesdb --eval "db.movies.findOne()"
+kubectl exec mongodb-0 -n content-db -- mongosh contentdb --eval "db.movies.findOne()"
 ```
 
 ## After ArgoCD Sync
@@ -89,7 +89,7 @@ After ArgoCD syncs the updated ConfigMap:
 If you need to restore the backup:
 
 ```bash
-kubectl exec mongodb-0 -n movies-db -- mongosh moviesdb --eval "
+kubectl exec mongodb-0 -n content-db -- mongosh contentdb --eval "
   db.movies.drop();
   db.movies_backup.find().forEach(function(doc) {
     db.movies.insertOne(doc);
@@ -111,7 +111,7 @@ The updated schema includes:
 ### Pod not found
 ```bash
 # Check pod name
-kubectl get pods -n movies-db
+kubectl get pods -n content-db
 
 # If different name, update the scripts
 ```
@@ -125,8 +125,8 @@ chmod +x *.sh
 ### Connection issues
 ```bash
 # Check pod status
-kubectl get pod mongodb-0 -n movies-db
-kubectl logs mongodb-0 -n movies-db
+kubectl get pod mongodb-0 -n content-db
+kubectl logs mongodb-0 -n content-db
 ```
 
 ## Notes

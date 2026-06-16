@@ -120,7 +120,7 @@ If you don't want to use ArgoCD, you can deploy directly:
 
 ### Step 1: Delete Old Namespace (if exists)
 ```bash
-oc delete namespace movies-db
+oc delete namespace content-db
 ```
 
 ### Step 2: Apply Kubernetes Manifests Directly

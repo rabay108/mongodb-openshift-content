@@ -253,10 +253,9 @@ print('  ✓ Comprehensive indexing strategy');
 print('  ✓ Full-text search support');
 print('');
 print('Next Steps:');
-print('  1. Migrate existing data from moviesdb.movies to contentdb.content_001');
-print('  2. Update application code to use new schema');
-print('  3. Add Books collection (content_002) when ready');
-print('  4. Add Music collection (content_003) when ready');
+print('  1. Update application code to use new schema');
+print('  2. Add Books collection (content_002) when ready');
+print('  3. Add Music collection (content_003) when ready');
 print('========================================');
 
 // Made with Bob

@@ -1,13 +1,13 @@
 // MongoDB Sample Data Script
-// This script inserts sample movie documents into the movies collection
+// This script inserts sample movie documents into the content_001 collection
 // Demonstrates the schema structure and extensibility
 
 print('========================================');
 print('Inserting Sample Movie Data');
 print('========================================');
 
-// Switch to the moviesdb database
-db = db.getSiblingDB('moviesdb');
+// Switch to the contentdb database
+db = db.getSiblingDB('contentdb');
 
 // Sample movie documents with realistic data
 const sampleMovies = [
@@ -391,7 +391,7 @@ const sampleMovies = [
 print('Inserting ' + sampleMovies.length + ' sample movies...');
 
 // Insert the sample movies
-const result = db.movies.insertMany(sampleMovies);
+const result = db.content_001.insertMany(sampleMovies);
 
 print('Successfully inserted ' + result.insertedIds.length + ' movies');
 print('========================================');
@@ -400,9 +400,9 @@ print('========================================');
 
 // Display summary
 print('\nDatabase Summary:');
-print('Total movies in collection: ' + db.movies.countDocuments());
+print('Total movies in collection: ' + db.content_001.countDocuments());
 print('\nMovies by year:');
-db.movies.aggregate([
+db.content_001.aggregate([
   { $group: { _id: '$year', count: { $sum: 1 } } },
   { $sort: { _id: 1 } }
 ]).forEach(doc => {
@@ -410,7 +410,7 @@ db.movies.aggregate([
 });
 
 print('\nSample query - Movies with rating > 8.5:');
-db.movies.find(
+db.content_001.find(
   { rating: { $gt: 8.5 } },
   { movieName: 1, year: 1, rating: 1, _id: 0 }
 ).forEach(doc => {
@@ -419,7 +419,7 @@ db.movies.find(
 
 print('\n========================================');
 print('Initialization Complete!');
-print('You can now query the movies collection');
+print('You can now query the content_001 collection');
 print('========================================');
 
 // Made with Bob

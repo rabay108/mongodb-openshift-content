@@ -22,12 +22,12 @@ Complete step-by-step instructions for deploying the MongoDB Content Database on
 
 This guide walks you through deploying a production-ready MongoDB database with:
 
-- **Database**: `moviesdb` with movies collection
+- **Database**: `contentdb` with content collection
 - **MongoDB Version**: 7.0
 - **Storage**: 10Gi persistent volume
-- **Sample Data**: 10 pre-loaded movies with schema validation
+- **Sample Data**: 10 pre-loaded content items with schema validation
 - **Deployment Method**: GitOps using ArgoCD
-- **Target Namespace**: `movies-db`
+- **Target Namespace**: `content-db`
 
 ### Architecture Overview
 
@@ -47,7 +47,7 @@ This guide walks you through deploying a production-ready MongoDB database with:
 │                                      │                      │
 │                                      ▼                      │
 │  ┌────────────────────────────────────────────────────┐    │
-│  │            movies-db namespace                      │    │
+│  │            content-db namespace                      │    │
 │  │                                                     │    │
 │  │  ┌──────────┐  ┌─────────┐  ┌────────────────┐   │    │
 │  │  │ Secret   │  │ConfigMap│  │      PVC       │   │    │
@@ -402,7 +402,7 @@ The ArgoCD AppProject defines security policies, RBAC, and allowed resources for
 
 The [`argocd/project.yaml`](argocd/project.yaml) file contains:
 - **Source repositories**: GitHub repository URL
-- **Destinations**: `movies-db` namespace
+- **Destinations**: `content-db` namespace
 - **Resource whitelists**: Allowed Kubernetes resources
 - **RBAC roles**: Admin, developer, and read-only roles
 
@@ -461,7 +461,7 @@ The [`argocd/application.yaml`](argocd/application.yaml) file contains:
 - **Source repository**: `https://github.com/rabay108/mongodb-openshift-content.git`
 - **Target revision**: `main` branch
 - **Path**: `k8s` directory
-- **Destination**: `movies-db` namespace
+- **Destination**: `content-db` namespace
 - **Sync policy**: Automated with self-healing enabled
 
 ### 4.2 Apply the Application Manifest
@@ -525,7 +525,7 @@ Healthy
 **Application Tree View:**
 ```
 mongodb-content-app
-├── Namespace: movies-db
+├── Namespace: content-db
 ├── Secret: mongodb-secret
 ├── ConfigMap: mongodb-init-scripts
 ├── PersistentVolumeClaim: mongodb-pvc
@@ -544,26 +544,26 @@ mongodb-content-app
 
 ```bash
 # Verify namespace exists
-oc get namespace movies-db
+oc get namespace content-db
 
 # View namespace details
-oc describe namespace movies-db
+oc describe namespace content-db
 ```
 
 **Expected Output:**
 ```
 NAME        STATUS   AGE
-movies-db   Active   2m
+content-db   Active   2m
 ```
 
 ### 5.2 Check All Resources
 
 ```bash
-# List all resources in movies-db namespace
-oc get all -n movies-db
+# List all resources in content-db namespace
+oc get all -n content-db
 
 # More detailed view
-oc get all,pvc,secret,configmap -n movies-db
+oc get all,pvc,secret,configmap -n content-db
 ```
 
 **Expected Output:**
@@ -591,10 +591,10 @@ configmap/mongodb-init-scripts    2      2m
 
 ```bash
 # Check StatefulSet details
-oc get statefulset mongodb -n movies-db
+oc get statefulset mongodb -n content-db
 
 # View StatefulSet description
-oc describe statefulset mongodb -n movies-db
+oc describe statefulset mongodb -n content-db
 ```
 
 **Expected Output:**
@@ -607,10 +607,10 @@ mongodb   1/1     3m
 
 ```bash
 # Check pod status
-oc get pods -n movies-db
+oc get pods -n content-db
 
 # View pod details
-oc describe pod mongodb-0 -n movies-db
+oc describe pod mongodb-0 -n content-db
 
 # Check pod events
 oc get events -n movies-db --sort-by='.lastTimestamp' | tail -20
@@ -626,10 +626,10 @@ mongodb-0   1/1     Running   0          3m
 
 ```bash
 # Check PVC status
-oc get pvc -n movies-db
+oc get pvc -n content-db
 
 # View PVC details
-oc describe pvc mongodb-pvc -n movies-db
+oc describe pvc mongodb-pvc -n content-db
 ```
 
 **Expected Output:**
@@ -733,7 +733,7 @@ moviesdb  200.00 KiB
 
 switched to db moviesdb
 
-movies
+content_001
 ```
 
 ### 6.3 Verify Collection and Document Count
@@ -806,8 +806,8 @@ db.movies.find({ actors: "Aamir Khan" }, { movieName: 1, year: 1 })
 ### 6.6 Test Full-Text Search
 
 ```javascript
-// Search for movies with "Nolan" in movieName, director, or actors
-db.movies.find({ $text: { $search: "Nolan" } }, { movieName: 1, director: 1 })
+// Search for content with "Nolan" in movieName, director, or actors
+db.content_001.find({ $text: { $search: "Nolan" } }, { movieName: 1, director: 1 })
 ```
 
 **Expected Output:**
@@ -825,7 +825,7 @@ db.movies.find({ $text: { $search: "Nolan" } }, { movieName: 1, director: 1 })
 exit
 ```
 
-✅ **Checkpoint**: Confirm the database has 10 movies and all indexes are created before proceeding.
+✅ **Checkpoint**: Confirm the database has 10 content items and all indexes are created before proceeding.
 
 ---
 
@@ -837,7 +837,7 @@ The MongoDB instance is configured with the following credentials:
 
 - **Username**: `admin`
 - **Password**: `M0ng0DB$ecur3P@ssw0rd2024!`
-- **Database**: `moviesdb`
+- **Database**: `contentdb`
 - **Port**: `27017`
 - **Authentication Database**: `admin`
 
@@ -847,18 +847,18 @@ The MongoDB instance is configured with the following credentials:
 
 From within the OpenShift cluster, applications can connect using:
 
-**Service Name**: `mongodb-service.movies-db.svc.cluster.local`
+**Service Name**: `mongodb-service.content-db.svc.cluster.local`
 
 **Connection String**:
 ```
-mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.movies-db.svc.cluster.local:27017/moviesdb?authSource=admin
+mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.content-db.svc.cluster.local:27017/contentdb?authSource=admin
 ```
 
 **Example: Connect from another pod**:
 ```bash
 # Deploy a test pod
-oc run mongodb-client --image=mongo:7.0 -n movies-db --rm -it --restart=Never -- \
-  mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@mongodb-service.movies-db.svc.cluster.local:27017/moviesdb?authSource=admin"
+oc run mongodb-client --image=mongo:7.0 -n content-db --rm -it --restart=Never -- \
+  mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@mongodb-service.content-db.svc.cluster.local:27017/contentdb?authSource=admin"
 ```
 
 ### 7.3 External Access via Port Forward (For Testing)
@@ -867,7 +867,7 @@ For local development and testing, you can use port forwarding:
 
 ```bash
 # Forward local port 27017 to MongoDB service
-oc port-forward -n movies-db svc/mongodb-service 27017:27017
+oc port-forward -n content-db svc/mongodb-service 27017:27017
 ```
 
 **Expected Output:**
@@ -880,11 +880,11 @@ Forwarding from [::1]:27017 -> 27017
 
 ```bash
 # Connect to MongoDB via port forward
-mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/moviesdb?authSource=admin"
+mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/contentdb?authSource=admin"
 ```
 
 **Or using MongoDB Compass**:
-- Connection String: `mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@localhost:27017/moviesdb?authSource=admin`
+- Connection String: `mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@localhost:27017/contentdb?authSource=admin`
 
 ### 7.4 Connection Examples
 
@@ -893,27 +893,27 @@ mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/moviesdb?au
 from pymongo import MongoClient
 
 client = MongoClient(
-    "mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.movies-db.svc.cluster.local:27017/moviesdb?authSource=admin"
+    "mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.content-db.svc.cluster.local:27017/contentdb?authSource=admin"
 )
-db = client.moviesdb
-movies = db.movies.find({"rating": {"$gt": 8.5}})
-for movie in movies:
-    print(movie["movieName"], movie["rating"])
+db = client.contentdb
+content = db.content_001.find({"rating": {"$gt": 8.5}})
+for item in content:
+    print(item["movieName"], item["rating"])
 ```
 
 **Node.js (mongodb)**:
 ```javascript
 const { MongoClient } = require('mongodb');
 
-const uri = "mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.movies-db.svc.cluster.local:27017/moviesdb?authSource=admin";
+const uri = "mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.content-db.svc.cluster.local:27017/contentdb?authSource=admin";
 const client = new MongoClient(uri);
 
 async function run() {
   await client.connect();
-  const database = client.db('moviesdb');
-  const movies = database.collection('movies');
+  const database = client.db('contentdb');
+  const content = database.collection('content_001');
   const query = { rating: { $gt: 8.5 } };
-  const cursor = movies.find(query);
+  const cursor = content.find(query);
   await cursor.forEach(console.log);
 }
 run().catch(console.dir);
@@ -925,9 +925,9 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
-String uri = "mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.movies-db.svc.cluster.local:27017/moviesdb?authSource=admin";
+String uri = "mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.content-db.svc.cluster.local:27017/contentdb?authSource=admin";
 MongoClient mongoClient = MongoClients.create(uri);
-MongoDatabase database = mongoClient.getDatabase("moviesdb");
+MongoDatabase database = mongoClient.getDatabase("contentdb");
 ```
 
 ✅ **Checkpoint**: Confirm you can successfully connect to MongoDB using at least one method.
@@ -978,14 +978,14 @@ oc logs -n openshift-gitops -l app.kubernetes.io/name=argocd-application-control
 **Diagnosis**:
 ```bash
 # Check pod status
-oc get pods -n movies-db
+oc get pods -n content-db
 
 # Check pod events
-oc describe pod mongodb-0 -n movies-db
+oc describe pod mongodb-0 -n content-db
 
 # Check pod logs
-oc logs -n movies-db mongodb-0 -c mongodb --tail=100
-oc logs -n movies-db mongodb-0 -c init-scripts
+oc logs -n content-db mongodb-0 -c mongodb --tail=100
+oc logs -n content-db mongodb-0 -c init-scripts
 ```
 
 **Common Issues and Solutions**:
@@ -993,8 +993,8 @@ oc logs -n movies-db mongodb-0 -c init-scripts
 1. **PVC Not Bound**:
    ```bash
    # Check PVC status
-   oc get pvc -n movies-db
-   oc describe pvc mongodb-pvc -n movies-db
+   oc get pvc -n content-db
+      oc describe pvc mongodb-pvc -n content-db
    
    # Check available storage classes
    oc get storageclass
@@ -1197,8 +1197,8 @@ This method removes all resources managed by ArgoCD:
 oc delete application mongodb-content-app -n openshift-gitops
 
 # Verify namespace is deleted
-oc get namespace movies-db
-# Should return: Error from server (NotFound): namespaces "movies-db" not found
+oc get namespace content-db
+# Should return: Error from server (NotFound): namespaces "content-db" not found
 
 # Delete AppProject
 oc delete appproject mongodb-content -n openshift-gitops
@@ -1218,7 +1218,7 @@ This method removes the namespace and all resources within it:
 
 ```bash
 # Delete the entire namespace
-oc delete namespace movies-db
+oc delete namespace content-db
 
 # This will delete:
 # - StatefulSet (mongodb)
@@ -1229,7 +1229,7 @@ oc delete namespace movies-db
 # - ConfigMap (mongodb-init-scripts)
 
 # Verify deletion
-oc get namespace movies-db
+oc get namespace content-db
 ```
 
 ### Option 3: Delete Individual Resources
@@ -1238,14 +1238,14 @@ If you want to keep the namespace but remove specific resources:
 
 ```bash
 # Delete in reverse order of creation
-oc delete statefulset mongodb -n movies-db
-oc delete service mongodb-service -n movies-db
-oc delete pvc mongodb-pvc -n movies-db
-oc delete configmap mongodb-init-scripts -n movies-db
-oc delete secret mongodb-secret -n movies-db
+oc delete statefulset mongodb -n content-db
+oc delete service mongodb-service -n content-db
+oc delete pvc mongodb-pvc -n content-db
+oc delete configmap mongodb-init-scripts -n content-db
+oc delete secret mongodb-secret -n content-db
 
 # Finally, delete namespace
-oc delete namespace movies-db
+oc delete namespace content-db
 ```
 
 ### Cleanup ArgoCD Resources
@@ -1266,10 +1266,10 @@ oc get appproject -n openshift-gitops | grep mongodb
 
 ```bash
 # Check for any remaining resources
-oc get all -n movies-db
-oc get pvc -n movies-db
-oc get secret -n movies-db
-oc get configmap -n movies-db
+oc get all -n content-db
+oc get pvc -n content-db
+oc get secret -n content-db
+oc get configmap -n content-db
 
 # Check ArgoCD resources
 oc get application -n openshift-gitops | grep mongodb
@@ -1306,14 +1306,14 @@ oc get appproject -n openshift-gitops
 oc logs -n openshift-gitops -l app.kubernetes.io/name=argocd-application-controller
 
 # MongoDB
-oc get all -n movies-db
-oc logs -n movies-db mongodb-0 -c mongodb
-oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin
+oc get all -n content-db
+oc logs -n content-db mongodb-0 -c mongodb
+oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin
 
 # Debugging
-oc describe pod mongodb-0 -n movies-db
-oc get events -n movies-db --sort-by='.lastTimestamp'
-oc port-forward -n movies-db svc/mongodb-service 27017:27017
+oc describe pod mongodb-0 -n content-db
+oc get events -n content-db --sort-by='.lastTimestamp'
+oc port-forward -n content-db svc/mongodb-service 27017:27017
 ```
 
 ---
@@ -1330,7 +1330,7 @@ You have successfully deployed MongoDB Content Database on OpenShift 4.20 using 
 ✅ Deployed ArgoCD Application with automated sync  
 ✅ Deployed MongoDB with persistent storage  
 ✅ Initialized database with schema validation and indexes  
-✅ Loaded 10 sample movies into the database  
+✅ Loaded 10 sample content items into the database
 ✅ Verified all components are healthy and operational  
 
 ### Next Steps

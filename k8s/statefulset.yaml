@@ -62,7 +62,7 @@ spec:
                   name: mongodb-secret
                   key: mongodb-root-password
             - name: MONGODB_DATABASE
-              value: "moviesdb"
+              value: "contentdb"
           # Resource limits and requests
           resources:
             limits:

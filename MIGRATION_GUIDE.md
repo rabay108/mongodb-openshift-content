@@ -26,10 +26,10 @@ If you don't have existing data or want a fresh start:
 ### Step 1: Delete Old Namespace (if exists)
 ```bash
 # This will delete everything in the old namespace
-oc delete namespace movies-db
+oc delete namespace content-db
 
 # Wait for namespace to be fully deleted
-oc get namespace movies-db
+oc get namespace content-db
 # Should return: Error from server (NotFound)
 ```
 
@@ -60,14 +60,14 @@ If you have existing data in `movies-db` that you want to migrate:
 ### Step 1: Backup Existing Data
 ```bash
 # Port-forward to MongoDB in old namespace
-oc port-forward -n movies-db svc/mongodb-service 27017:27017
+oc port-forward -n content-db svc/mongodb-service 27017:27017
 
 # In another terminal, backup the data
-mongodump --uri="mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/moviesdb" \
+mongodump --uri="mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/contentdb" \
   --out=/tmp/mongodb-backup
 
 # Verify backup
-ls -lh /tmp/mongodb-backup/moviesdb/
+ls -lh /tmp/mongodb-backup/contentdb/
 ```
 
 ### Step 2: Deploy New Application
@@ -86,7 +86,7 @@ oc port-forward -n content-db svc/mongodb-service 27017:27017
 
 # In another terminal, restore to new database
 mongorestore --uri="mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017" \
-  --nsFrom="moviesdb.movies" \
+  --nsFrom="contentdb.content_001" \
   --nsTo="contentdb.content_001_temp" \
   /tmp/mongodb-backup
 
@@ -154,7 +154,7 @@ db.content_001_temp.drop();
 ### Step 5: Clean Up Old Namespace
 ```bash
 # Once data is migrated and verified, delete old namespace
-oc delete namespace movies-db
+oc delete namespace content-db
 ```
 
 ---
@@ -169,7 +169,7 @@ Run both namespaces in parallel during migration:
 oc apply -f argocd/application.yaml
 
 # Both namespaces now exist:
-oc get namespaces | grep -E "movies-db|content-db"
+oc get namespaces | grep -E "content-db"
 ```
 
 ### Step 2: Migrate Data (as in Option 2)
@@ -184,7 +184,7 @@ Update your application configuration to point to:
 ### Step 4: Verify and Clean Up
 ```bash
 # After verifying application works with new namespace
-oc delete namespace movies-db
+oc delete namespace content-db
 ```
 
 ---
@@ -222,33 +222,33 @@ syncPolicy:
 oc get namespaces
 
 # Check resources in old namespace
-oc get all -n movies-db
+oc get all -n content-db
 
 # Check resources in new namespace
 oc get all -n content-db
 
 # Check PVCs (these persist after pod deletion)
-oc get pvc -n movies-db
+oc get pvc -n content-db
 oc get pvc -n content-db
 ```
 
 ### Manual Cleanup (if needed)
 ```bash
 # Delete specific resources in old namespace
-oc delete statefulset mongodb -n movies-db
-oc delete service mongodb-service -n movies-db
-oc delete configmap mongodb-init-scripts -n movies-db
-oc delete secret mongodb-secret -n movies-db
-oc delete pvc mongodb-pvc -n movies-db
+oc delete statefulset mongodb -n content-db
+oc delete service mongodb-service -n content-db
+oc delete configmap mongodb-init-scripts -n content-db
+oc delete secret mongodb-secret -n content-db
+oc delete pvc mongodb-pvc -n content-db
 
 # Or delete entire namespace (deletes everything)
-oc delete namespace movies-db
+oc delete namespace content-db
 ```
 
 ### Verify Cleanup
 ```bash
 # Should return "NotFound"
-oc get namespace movies-db
+oc get namespace content-db
 
 # New namespace should be running
 oc get pods -n content-db
@@ -279,7 +279,7 @@ oc get svc -n content-db
 ### Issue: PVC Already Exists
 ```bash
 # If PVC name conflicts, delete old PVC
-oc delete pvc mongodb-pvc -n movies-db
+oc delete pvc mongodb-pvc -n content-db
 
 # Or use different PVC name in new namespace (already done - same name is OK in different namespace)
 ```
@@ -331,7 +331,7 @@ oc get pvc -n content-db
 ### Clean Start (No Data Migration)
 ```bash
 # 1. Delete old namespace
-oc delete namespace movies-db
+oc delete namespace content-db
 
 # 2. Deploy via ArgoCD
 oc apply -f argocd/application.yaml
@@ -343,7 +343,7 @@ oc get pods -n content-db -w
 ### With Data Migration
 ```bash
 # 1. Backup
-mongodump --uri="mongodb://admin:PASSWORD@localhost:27017/moviesdb" --out=/tmp/backup
+mongodump --uri="mongodb://admin:PASSWORD@localhost:27017/contentdb" --out=/tmp/backup
 
 # 2. Deploy new
 oc apply -f argocd/application.yaml
@@ -351,7 +351,7 @@ oc apply -f argocd/application.yaml
 # 3. Restore and transform (see Step 3-4 in Option 2)
 
 # 4. Clean up old
-oc delete namespace movies-db
+oc delete namespace content-db
 ```
 
 ---

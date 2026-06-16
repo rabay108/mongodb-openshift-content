@@ -9,10 +9,10 @@ echo "MongoDB Data Reload Script"
 echo "=========================================="
 
 # Configuration
-NAMESPACE="movies-db"
+NAMESPACE="content-db"
 STATEFULSET_NAME="mongodb"
 POD_NAME="${STATEFULSET_NAME}-0"
-DB_NAME="moviesdb"
+DB_NAME="contentdb"
 COLLECTION_NAME="movies"
 
 # Check if pod exists

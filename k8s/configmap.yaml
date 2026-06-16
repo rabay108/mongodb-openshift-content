@@ -14,23 +14,23 @@ metadata:
     description: "Initialization scripts for MongoDB flexible content database (Movies, Books, Music)"
 data:
   # Schema initialization script
-  # Creates the movies collection with validation and indexes
+  # Creates the content_001 collection with validation and indexes
   init-schema.js: |
     // MongoDB Initialization Script - Schema Setup
-    // This script creates the movies database with schema validation and indexes
+    // This script creates the content_001 collection with schema validation and indexes
     // Run automatically when MongoDB container starts
 
     print('========================================');
     print('Starting MongoDB Movies Database Initialization');
     print('========================================');
 
-    // Switch to the moviesdb database
-    db = db.getSiblingDB('moviesdb');
+    // Switch to the contentdb database
+    db = db.getSiblingDB('contentdb');
 
-    print('Creating movies collection with schema validation...');
+    print('Creating content_001 collection with schema validation...');
 
     // Create the movies collection with JSON Schema validation
-    db.createCollection('movies', {
+    db.createCollection('content_001', {
       validator: {
         $jsonSchema: {
           bsonType: 'object',
@@ -181,28 +181,28 @@ data:
     print('Creating indexes for optimized queries...');
 
     // Create index on movieName for fast movie name searches
-    db.movies.createIndex(
+    db.content_001.createIndex(
       { movieName: 1 },
       { name: 'idx_movieName' }
     );
     print('Index created on movieName');
 
     // Create index on year for year-based queries
-    db.movies.createIndex(
+    db.content_001.createIndex(
       { year: -1 },
       { name: 'idx_year' }
     );
     print('Index created on year');
 
     // Create index on songs.singer for singer-based searches
-    db.movies.createIndex(
+    db.content_001.createIndex(
       { 'songs.singer': 1 },
       { name: 'idx_songs_singer' }
     );
     print('Index created on songs.singer');
 
     // Create compound index on year and movieName
-    db.movies.createIndex(
+    db.content_001.createIndex(
       { year: -1, movieName: 1 },
       { name: 'idx_year_movieName' }
     );
@@ -210,7 +210,7 @@ data:
 
     // Create text index for full-text search on movieName, director, and movieLanguage
     // Using 'none' as default_language for language-agnostic search
-    db.movies.createIndex(
+    db.content_001.createIndex(
       { movieName: 'text', director: 'text', actors: 'text', actresses: 'text', movieLanguage: 'text' },
       {
         name: 'idx_text_search',
@@ -222,8 +222,8 @@ data:
 
     print('========================================');
     print('Schema initialization completed successfully!');
-    print('Database: moviesdb');
-    print('Collection: movies');
+    print('Database: contentdb');
+    print('Collection: content_001');
     print('Indexes created: 5');
     print('========================================');
 
@@ -238,8 +238,8 @@ data:
     print('Inserting Sample Movie Data');
     print('========================================');
 
-    // Switch to the moviesdb database
-    db = db.getSiblingDB('moviesdb');
+    // Switch to the contentdb database
+    db = db.getSiblingDB('contentdb');
 
     // Sample movie documents with realistic data
     const sampleMovies = [
@@ -623,7 +623,7 @@ data:
     print('Inserting ' + sampleMovies.length + ' sample movies...');
 
     // Insert the sample movies
-    const result = db.movies.insertMany(sampleMovies);
+    const result = db.content_001.insertMany(sampleMovies);
 
     print('Successfully inserted ' + result.insertedIds.length + ' movies');
     print('========================================');
@@ -632,9 +632,9 @@ data:
 
     // Display summary
     print('\nDatabase Summary:');
-    print('Total movies in collection: ' + db.movies.countDocuments());
+    print('Total movies in collection: ' + db.content_001.countDocuments());
     print('\nMovies by year:');
-    db.movies.aggregate([
+    db.content_001.aggregate([
       { $group: { _id: '$year', count: { $sum: 1 } } },
       { $sort: { _id: 1 } }
     ]).forEach(doc => {
@@ -642,7 +642,7 @@ data:
     });
 
     print('\nSample query - Movies with rating > 8.5:');
-    db.movies.find(
+    db.content_001.find(
       { rating: { $gt: 8.5 } },
       { movieName: 1, year: 1, rating: 1, _id: 0 }
     ).forEach(doc => {
@@ -651,7 +651,7 @@ data:
 
     print('\n========================================');
     print('Initialization Complete!');
-    print('You can now query the movies collection');
+    print('You can now query the content_001 collection');
     print('========================================');
   
   # Content Types Metadata - Flexible Schema
@@ -1354,7 +1354,7 @@ data:
     print('  ✓ Full-text search support');
     print('');
     print('Next Steps:');
-    print('  1. Migrate existing data from moviesdb.movies to contentdb.content_001');
+    print('  1. Migrate existing data from old movies collection to contentdb.content_001');
     print('  2. Update application code to use new schema');
     print('  3. Add Books collection (content_002) when ready');
     print('  4. Add Music collection (content_003) when ready');

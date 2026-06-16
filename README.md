@@ -1,6 +1,6 @@
 # MongoDB Content Database - OpenShift Deployment
 
-A complete MongoDB deployment setup for OpenShift/Kubernetes with a pre-configured movie database schema. This deployment includes schema validation, indexes, and sample data for a production-ready movies database.
+A complete MongoDB deployment setup for OpenShift/Kubernetes with a pre-configured content database schema. This deployment includes schema validation, indexes, and sample data for a production-ready content database.
 
 ## 📋 Table of Contents
 
@@ -21,11 +21,11 @@ A complete MongoDB deployment setup for OpenShift/Kubernetes with a pre-configur
 ## 🎯 Overview
 
 This project provides a complete MongoDB deployment for OpenShift with:
-- **Database**: `moviesdb`
-- **Collection**: `movies`
+- **Database**: `contentdb`
+- **Collection**: `content_001`
 - **MongoDB Version**: 7.0
 - **Storage**: 10Gi persistent volume
-- **Sample Data**: 10 pre-loaded movies
+- **Sample Data**: 10 pre-loaded content items
 
 ## ✨ Features
 
@@ -36,7 +36,7 @@ This project provides a complete MongoDB deployment for OpenShift with:
 - ✅ **Health Checks**: Liveness and readiness probes
 - ✅ **Secure Authentication**: Secret-based credentials
 - ✅ **Extensible Schema**: Metadata field for future additions
-- ✅ **Sample Data**: 10 movies with complete information
+- ✅ **Sample Data**: 10 content items with complete information
 - ✅ **Production Ready**: Best practices for OpenShift deployment
 
 ## 📦 Prerequisites
@@ -80,7 +80,7 @@ mongodb-openshift-content/
 
 ## 🗄️ Database Schema
 
-### Movies Collection Schema
+### Content Collection Schema
 
 ```javascript
 {
@@ -151,16 +151,16 @@ oc apply -f k8s/statefulset.yaml
 
 ```bash
 # Check if all resources are created
-oc get all -n movies-db
+oc get all -n content-db
 
 # Check pod status
-oc get pods -n movies-db
+oc get pods -n content-db
 
 # Check PVC status
-oc get pvc -n movies-db
+oc get pvc -n content-db
 
 # Wait for pod to be ready (may take 1-2 minutes)
-oc wait --for=condition=ready pod -l app=mongodb -n movies-db --timeout=300s
+oc wait --for=condition=ready pod -l app=mongodb -n content-db --timeout=300s
 ```
 
 ### Alternative: Deploy All at Once
@@ -181,31 +181,31 @@ oc apply -f k8s/namespace.yaml \
 
 - **Username**: `admin`
 - **Password**: `M0ng0DB$ecur3P@ssw0rd2024!`
-- **Database**: `moviesdb`
+- **Database**: `contentdb`
 - **Port**: `27017`
 
 ### Method 1: Port Forward (Recommended for Testing)
 
 ```bash
 # Forward local port 27017 to MongoDB service
-oc port-forward -n movies-db svc/mongodb-service 27017:27017
+oc port-forward -n content-db svc/mongodb-service 27017:27017
 
 # In another terminal, connect using mongosh
-mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/moviesdb?authSource=admin"
+mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/contentdb?authSource=admin"
 ```
 
 ### Method 2: From Within the Cluster
 
 ```bash
 # Execute mongosh inside the pod
-oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin moviesdb
+oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin contentdb
 ```
 
 ### Method 3: From Another Pod in the Cluster
 
 Connection string:
 ```
-mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.movies-db.svc.cluster.local:27017/moviesdb?authSource=admin
+mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.content-db.svc.cluster.local:27017/contentdb?authSource=admin
 ```
 
 ## ✅ Verification
@@ -214,36 +214,36 @@ mongodb://admin:M0ng0DB$ecur3P@ssw0rd2024!@mongodb-service.movies-db.svc.cluster
 
 ```bash
 # View initialization logs
-oc logs -n movies-db mongodb-0 -c init-scripts
+oc logs -n content-db mongodb-0 -c init-scripts
 
 # View MongoDB logs
-oc logs -n movies-db mongodb-0 -c mongodb
+oc logs -n content-db mongodb-0 -c mongodb
 
 # Follow logs in real-time
-oc logs -n movies-db mongodb-0 -c mongodb -f
+oc logs -n content-db mongodb-0 -c mongodb -f
 ```
 
 ### Verify Database and Collection
 
 ```bash
 # Connect to MongoDB
-oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin
+oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin
 
 # Inside mongosh:
-use moviesdb
+use contentdb
 show collections
-db.movies.countDocuments()  // Should return 10
-db.movies.getIndexes()      // Should show 5 indexes
+db.content_001.countDocuments()  // Should return 10
+db.content_001.getIndexes()      // Should show 5 indexes
 ```
 
 ### Check Resource Usage
 
 ```bash
 # Check pod resource usage
-oc top pod -n movies-db
+oc top pod -n content-db
 
 # Check PVC usage
-oc get pvc -n movies-db
+oc get pvc -n content-db
 ```
 
 ## 🔍 Sample Queries
@@ -252,75 +252,75 @@ oc get pvc -n movies-db
 
 ```javascript
 // Connect to the database
-use moviesdb
+use contentdb
 
-// 1. Find all movies
-db.movies.find().pretty()
+// 1. Find all content items
+db.content_001.find().pretty()
 
-// 2. Count total movies
-db.movies.countDocuments()
+// 2. Count total content items
+db.content_001.countDocuments()
 
-// 3. Find movies by year
-db.movies.find({ year: 1994 })
+// 3. Find content by year
+db.content_001.find({ year: 1994 })
 
-// 4. Find movies with rating > 8.5
-db.movies.find({ rating: { $gt: 8.5 } }, { movieName: 1, year: 1, rating: 1 })
+// 4. Find content with rating > 8.5
+db.content_001.find({ rating: { $gt: 8.5 } }, { movieName: 1, year: 1, rating: 1 })
 
-// 5. Find movies by actor
-db.movies.find({ actors: "Aamir Khan" }, { movieName: 1, year: 1 })
+// 5. Find content by actor
+db.content_001.find({ actors: "Aamir Khan" }, { movieName: 1, year: 1 })
 
-// 6. Find movies by singer
-db.movies.find({ "songs.singer": /Kumar Sanu/ }, { movieName: 1, "songs.title": 1 })
+// 6. Find content by singer
+db.content_001.find({ "songs.singer": /Kumar Sanu/ }, { movieName: 1, "songs.title": 1 })
 
-// 7. Find movies by genre
-db.movies.find({ genre: "Drama" }, { movieName: 1, genre: 1 })
+// 7. Find content by genre
+db.content_001.find({ genre: "Drama" }, { movieName: 1, genre: 1 })
 
-// 8. Find movies by director
-db.movies.find({ director: "Christopher Nolan" }, { movieName: 1, year: 1 })
+// 8. Find content by director
+db.content_001.find({ director: "Christopher Nolan" }, { movieName: 1, year: 1 })
 ```
 
 ### Advanced Queries
 
 ```javascript
 // 1. Full-text search
-db.movies.find({ $text: { $search: "Nolan" } })
+db.content_001.find({ $text: { $search: "Nolan" } })
 
-// 2. Movies released after 2000 with high ratings
-db.movies.find({ 
-  year: { $gte: 2000 }, 
-  rating: { $gte: 8.0 } 
+// 2. Content released after 2000 with high ratings
+db.content_001.find({
+  year: { $gte: 2000 },
+  rating: { $gte: 8.0 }
 }, { movieName: 1, year: 1, rating: 1 }).sort({ rating: -1 })
 
-// 3. Aggregate: Movies by year
-db.movies.aggregate([
+// 3. Aggregate: Content by year
+db.content_001.aggregate([
   { $group: { _id: "$year", count: { $sum: 1 } } },
   { $sort: { _id: 1 } }
 ])
 
 // 4. Aggregate: Average rating by language
-db.movies.aggregate([
+db.content_001.aggregate([
   { $group: { _id: "$language", avgRating: { $avg: "$rating" } } },
   { $sort: { avgRating: -1 } }
 ])
 
-// 5. Find movies with specific actor and actress
-db.movies.find({ 
-  actors: "Aamir Khan", 
-  actresses: { $exists: true, $ne: [] } 
+// 5. Find content with specific actor and actress
+db.content_001.find({
+  actors: "Aamir Khan",
+  actresses: { $exists: true, $ne: [] }
 }, { movieName: 1, actors: 1, actresses: 1 })
 
-// 6. Movies with more than 3 songs
-db.movies.find({ 
-  $expr: { $gt: [{ $size: "$songs" }, 3] } 
+// 6. Content with more than 3 songs
+db.content_001.find({
+  $expr: { $gt: [{ $size: "$songs" }, 3] }
 }, { movieName: 1, songs: 1 })
 
 // 7. Project specific fields
-db.movies.find({}, { 
-  movieName: 1, 
-  year: 1, 
-  director: 1, 
-  rating: 1, 
-  _id: 0 
+db.content_001.find({}, {
+  movieName: 1,
+  year: 1,
+  director: 1,
+  rating: 1,
+  _id: 0
 }).sort({ rating: -1 })
 ```
 
@@ -328,19 +328,19 @@ db.movies.find({}, {
 
 ```javascript
 // 1. Add a new field to a specific movie
-db.movies.updateOne(
+db.content_001.updateOne(
   { movieName: "Inception" },
   { $set: { "metadata.sequels": [] } }
 )
 
-// 2. Add a new song to a movie
-db.movies.updateOne(
+// 2. Add a new song to a content item
+db.content_001.updateOne(
   { movieName: "Lagaan" },
   { $push: { songs: { title: "Ghanan Ghanan", singer: "Udit Narayan" } } }
 )
 
 // 3. Update rating
-db.movies.updateOne(
+db.content_001.updateOne(
   { movieName: "The Godfather" },
   { $set: { rating: 9.3 } }
 )
@@ -353,14 +353,14 @@ The schema is designed to be extensible using the `metadata` field. Here's how t
 ### Example 1: Add Awards Information
 
 ```javascript
-db.movies.updateOne(
+db.content_001.updateOne(
   { movieName: "Inception" },
-  { 
-    $set: { 
+  {
+    $set: {
       "metadata.oscarWins": 4,
       "metadata.oscarNominations": 8,
       "metadata.goldenGlobeNominations": 3
-    } 
+    }
   }
 )
 ```
@@ -368,15 +368,15 @@ db.movies.updateOne(
 ### Example 2: Add Streaming Information
 
 ```javascript
-db.movies.updateMany(
+db.content_001.updateMany(
   {},
-  { 
-    $set: { 
+  {
+    $set: {
       "metadata.streaming": {
         platforms: ["Netflix", "Amazon Prime"],
         availableFrom: new Date("2024-01-01")
       }
-    } 
+    }
   }
 )
 ```
@@ -384,13 +384,13 @@ db.movies.updateMany(
 ### Example 3: Add Production Company
 
 ```javascript
-db.movies.updateOne(
+db.content_001.updateOne(
   { movieName: "The Dark Knight" },
-  { 
-    $set: { 
+  {
+    $set: {
       "metadata.productionCompany": "Warner Bros. Pictures",
       "metadata.distributor": "Warner Bros. Pictures"
-    } 
+    }
   }
 )
 ```
@@ -401,7 +401,7 @@ If you need to add new top-level fields, update the schema validation:
 
 ```javascript
 db.runCommand({
-  collMod: "movies",
+  collMod: "content_001",
   validator: {
     $jsonSchema: {
       bsonType: "object",
@@ -424,21 +424,21 @@ db.runCommand({
 
 ```bash
 # Check pod events
-oc describe pod -n movies-db mongodb-0
+oc describe pod -n content-db mongodb-0
 
 # Check pod logs
-oc logs -n movies-db mongodb-0 -c mongodb
-oc logs -n movies-db mongodb-0 -c init-scripts
+oc logs -n content-db mongodb-0 -c mongodb
+oc logs -n content-db mongodb-0 -c init-scripts
 
 # Check if PVC is bound
-oc get pvc -n movies-db
+oc get pvc -n content-db
 ```
 
 ### PVC Pending
 
 ```bash
 # Check PVC status
-oc describe pvc -n movies-db mongodb-pvc
+oc describe pvc -n content-db mongodb-pvc
 
 # Check available storage classes
 oc get storageclass
@@ -451,29 +451,29 @@ oc get storageclass
 
 ```bash
 # Verify service is running
-oc get svc -n movies-db
+oc get svc -n content-db
 
 # Check if pod is ready
-oc get pods -n movies-db
+oc get pods -n content-db
 
 # Test connection from within the pod
-oc exec -it -n movies-db mongodb-0 -- mongosh --eval "db.adminCommand('ping')"
+oc exec -it -n content-db mongodb-0 -- mongosh --eval "db.adminCommand('ping')"
 
 # Check secret is correctly created
-oc get secret -n movies-db mongodb-secret -o yaml
+oc get secret -n content-db mongodb-secret -o yaml
 ```
 
 ### Initialization Scripts Not Running
 
 ```bash
 # Check init container logs
-oc logs -n movies-db mongodb-0 -c init-scripts
+oc logs -n content-db mongodb-0 -c init-scripts
 
 # Verify ConfigMap exists
-oc get configmap -n movies-db mongodb-init-scripts
+oc get configmap -n content-db mongodb-init-scripts
 
 # Check if scripts are mounted
-oc exec -it -n movies-db mongodb-0 -- ls -la /docker-entrypoint-initdb.d/
+oc exec -it -n content-db mongodb-0 -- ls -la /docker-entrypoint-initdb.d/
 ```
 
 ### Database Not Initialized
@@ -490,10 +490,10 @@ oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd
 
 ```bash
 # Check resource usage
-oc top pod -n movies-db
+oc top pod -n content-db
 
 # Check resource limits
-oc describe pod -n movies-db mongodb-0 | grep -A 5 "Limits"
+oc describe pod -n content-db mongodb-0 | grep -A 5 "Limits"
 
 # If needed, adjust resources in statefulset.yaml
 ```
@@ -562,7 +562,7 @@ oc delete -f k8s/secret.yaml
 oc delete -f k8s/namespace.yaml
 
 # Or delete namespace (removes everything)
-oc delete namespace movies-db
+oc delete namespace content-db
 ```
 
 ## 🔒 Security Considerations
@@ -575,7 +575,7 @@ oc delete namespace movies-db
    openssl rand -base64 32
    
    # Update secret with new password (base64 encoded)
-   oc edit secret mongodb-secret -n movies-db
+   oc edit secret mongodb-secret -n content-db
    ```
 
 2. **Use Network Policies**

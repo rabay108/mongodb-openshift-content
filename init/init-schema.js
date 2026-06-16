@@ -1,18 +1,18 @@
 // MongoDB Initialization Script - Schema Setup
-// This script creates the movies database with schema validation and indexes
+// This script creates the content database with schema validation and indexes
 // Run automatically when MongoDB container starts
 
 print('========================================');
-print('Starting MongoDB Movies Database Initialization');
+print('Starting MongoDB Content Database Initialization');
 print('========================================');
 
-// Switch to the moviesdb database
-db = db.getSiblingDB('moviesdb');
+// Switch to the contentdb database
+db = db.getSiblingDB('contentdb');
 
-print('Creating movies collection with schema validation...');
+print('Creating content_001 collection with schema validation...');
 
-// Create the movies collection with JSON Schema validation
-db.createCollection('movies', {
+// Create the content_001 collection with JSON Schema validation
+db.createCollection('content_001', {
   validator: {
     $jsonSchema: {
       bsonType: 'object',
@@ -158,33 +158,33 @@ db.createCollection('movies', {
   validationAction: 'warn'
 });
 
-print('Movies collection created successfully with schema validation');
+print('Content collection created successfully with schema validation');
 
 print('Creating indexes for optimized queries...');
 
 // Create index on movieName for fast movie name searches
-db.movies.createIndex(
+db.content_001.createIndex(
   { movieName: 1 },
   { name: 'idx_movieName' }
 );
 print('Index created on movieName');
 
 // Create index on year for year-based queries
-db.movies.createIndex(
+db.content_001.createIndex(
   { year: -1 },
   { name: 'idx_year' }
 );
 print('Index created on year');
 
 // Create index on songs.singer for singer-based searches
-db.movies.createIndex(
+db.content_001.createIndex(
   { 'songs.singer': 1 },
   { name: 'idx_songs_singer' }
 );
 print('Index created on songs.singer');
 
 // Create compound index on year and movieName
-db.movies.createIndex(
+db.content_001.createIndex(
   { year: -1, movieName: 1 },
   { name: 'idx_year_movieName' }
 );
@@ -192,7 +192,7 @@ print('Compound index created on year and movieName');
 
 // Create text index for full-text search on movieName, director, and movieLanguage
 // Using 'none' as default_language for language-agnostic search
-db.movies.createIndex(
+db.content_001.createIndex(
   { movieName: 'text', director: 'text', actors: 'text', actresses: 'text', movieLanguage: 'text' },
   {
     name: 'idx_text_search',
@@ -204,8 +204,8 @@ print('Text index created for full-text search with language-agnostic configurat
 
 print('========================================');
 print('Schema initialization completed successfully!');
-print('Database: moviesdb');
-print('Collection: movies');
+print('Database: contentdb');
+print('Collection: content_001');
 print('Indexes created: 5');
 print('========================================');
 

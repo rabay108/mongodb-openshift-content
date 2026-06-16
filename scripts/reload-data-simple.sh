@@ -9,12 +9,12 @@ echo "MongoDB Data Reload Script (Simple)"
 echo "=========================================="
 
 # Configuration
-NAMESPACE="movies-db"
+NAMESPACE="content-db"
 POD_NAME="mongodb-0"
 
 echo ""
 echo "Step 1: Backing up existing data..."
-kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh moviesdb --quiet --eval "
+kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh contentdb --quiet --eval "
   const count = db.movies.countDocuments();
   print('Current documents: ' + count);
   if (count > 0) {
@@ -27,7 +27,7 @@ kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh moviesdb --quiet --eval "
 
 echo ""
 echo "Step 2: Dropping movies collection..."
-kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh moviesdb --quiet --eval "
+kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh contentdb --quiet --eval "
   db.movies.drop();
   print('✅ Collection dropped');
 "
@@ -42,7 +42,7 @@ kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh < /docker-entrypoint-initdb.
 
 echo ""
 echo "Step 5: Verifying reload..."
-kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh moviesdb --quiet --eval "
+kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh contentdb --quiet --eval "
   const count = db.movies.countDocuments();
   print('✅ Total documents: ' + count);
   
