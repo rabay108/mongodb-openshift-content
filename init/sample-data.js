@@ -22,12 +22,23 @@ const sampleMovies = [
     year: 1994,
     director: "Frank Darabont",
     genre: ["Drama", "Crime"],
-    language: "English",
+    movieLanguage: "English",
+    releaseDate: new Date("1994-09-23"),
     rating: 9.3,
     boxOffice: {
       budget: "$25 million",
       worldwide: "$73.3 million"
     },
+    ottPlatforms: [
+      { platform: "Netflix", icon: "🎬", url: "https://www.netflix.com/title/70047108" },
+      { platform: "Prime Video", icon: "📺", url: "https://www.primevideo.com/detail/0PDLCBKDXQ8R5JLF8JVQZD0LKL" },
+      { platform: "YouTube", icon: "▶️", url: "https://www.youtube.com/watch?v=6hB3S9bIaco" }
+    ],
+    links: [
+      { label: "Full Movie", url: "https://www.netflix.com/title/70047108", type: "movie" },
+      { label: "Official Trailer", url: "https://www.youtube.com/watch?v=6hB3S9bIaco", type: "trailer" },
+      { label: "Behind the Scenes", url: "https://www.youtube.com/watch?v=BuRuwR2JSXI", type: "teaser" }
+    ],
     metadata: {
       awards: ["Academy Award nominations: 7"],
       basedOn: "Rita Hayworth and Shawshank Redemption by Stephen King",
@@ -48,12 +59,25 @@ const sampleMovies = [
     year: 1995,
     director: "Aditya Chopra",
     genre: ["Romance", "Drama", "Musical"],
-    language: "Hindi",
+    movieLanguage: "Hindi",
+    releaseDate: new Date("1995-10-20"),
     rating: 8.1,
     boxOffice: {
       budget: "₹4 crore",
       worldwide: "₹200+ crore"
     },
+    ottPlatforms: [
+      { platform: "Prime Video", icon: "📺", url: "https://www.primevideo.com/detail/0GKQY6LQVZ8WJHXQVZ8W" },
+      { platform: "Netflix", icon: "🎬", url: "https://www.netflix.com/title/17457962" },
+      { platform: "YouTube", icon: "▶️", url: "https://www.youtube.com/watch?v=gKVKPNJRCvQ" }
+    ],
+    links: [
+      { label: "Full Movie", url: "https://www.primevideo.com/detail/0GKQY6LQVZ8WJHXQVZ8W", type: "movie" },
+      { label: "Official Trailer", url: "https://www.youtube.com/watch?v=gKVKPNJRCvQ", type: "trailer" },
+      { label: "Song: Tujhe Dekha To", url: "https://www.youtube.com/watch?v=Jb3pN0vVZhA", type: "song" },
+      { label: "Song: Mere Khwabon Mein", url: "https://www.youtube.com/watch?v=Nt4dMCKqaI4", type: "song" },
+      { label: "Song: Ho Gaya Hai Tujhko", url: "https://www.youtube.com/watch?v=8KsyOVn5Prc", type: "song" }
+    ],
     metadata: {
       awards: ["Filmfare Awards: 10 wins"],
       runningTime: "Still running in Maratha Mandir, Mumbai",
@@ -72,12 +96,23 @@ const sampleMovies = [
     year: 1972,
     director: "Francis Ford Coppola",
     genre: ["Crime", "Drama"],
-    language: "English",
+    movieLanguage: "English",
+    releaseDate: new Date("1972-03-24"),
     rating: 9.2,
     boxOffice: {
       budget: "$6-7 million",
       worldwide: "$250-291 million"
     },
+    ottPlatforms: [
+      { platform: "Paramount+", icon: "⭐", url: "https://www.paramountplus.com/movies/the-godfather" },
+      { platform: "Prime Video", icon: "📺", url: "https://www.primevideo.com/detail/0PDLCBKDXQ8R5JLF8JVQZD0LKL" },
+      { platform: "YouTube", icon: "▶️", url: "https://www.youtube.com/watch?v=sY1S34973zA" }
+    ],
+    links: [
+      { label: "Full Movie", url: "https://www.paramountplus.com/movies/the-godfather", type: "movie" },
+      { label: "Official Trailer", url: "https://www.youtube.com/watch?v=sY1S34973zA", type: "trailer" },
+      { label: "50th Anniversary Trailer", url: "https://www.youtube.com/watch?v=UaVTIH8mujAY", type: "teaser" }
+    ],
     metadata: {
       awards: ["Academy Awards: 3 wins including Best Picture"],
       basedOn: "Novel by Mario Puzo",
@@ -98,12 +133,25 @@ const sampleMovies = [
     year: 2001,
     director: "Ashutosh Gowariker",
     genre: ["Drama", "Musical", "Sports"],
-    language: "Hindi",
+    movieLanguage: "Hindi",
+    releaseDate: new Date("2001-06-15"),
     rating: 8.1,
     boxOffice: {
       budget: "₹25 crore",
       worldwide: "₹65.97 crore"
     },
+    ottPlatforms: [
+      { platform: "Netflix", icon: "🎬", url: "https://www.netflix.com/title/60021735" },
+      { platform: "Prime Video", icon: "📺", url: "https://www.primevideo.com/detail/0GKQY6LQVZ8WJHXQVZ8W" },
+      { platform: "YouTube", icon: "▶️", url: "https://www.youtube.com/watch?v=IzWGFdN1Aw0" }
+    ],
+    links: [
+      { label: "Full Movie", url: "https://www.netflix.com/title/60021735", type: "movie" },
+      { label: "Official Trailer", url: "https://www.youtube.com/watch?v=IzWGFdN1Aw0", type: "trailer" },
+      { label: "Song: Mitwa", url: "https://www.youtube.com/watch?v=qctvvvTz3Yk", type: "song" },
+      { label: "Song: Chale Chalo", url: "https://www.youtube.com/watch?v=aZXZBT3jASw", type: "song" },
+      { label: "Song: Radha Kaise Na Jale", url: "https://www.youtube.com/watch?v=Nt4dMCKqaI4", type: "song" }
+    ],
     metadata: {
       awards: ["Academy Award nomination for Best Foreign Language Film"],
       musicDirector: "A.R. Rahman",
@@ -122,12 +170,23 @@ const sampleMovies = [
     year: 2010,
     director: "Christopher Nolan",
     genre: ["Action", "Sci-Fi", "Thriller"],
-    language: "English",
+    movieLanguage: "English",
+    releaseDate: new Date("2010-07-16"),
     rating: 8.8,
     boxOffice: {
       budget: "$160 million",
       worldwide: "$836.8 million"
     },
+    ottPlatforms: [
+      { platform: "Netflix", icon: "🎬", url: "https://www.netflix.com/title/70131314" },
+      { platform: "Prime Video", icon: "📺", url: "https://www.primevideo.com/detail/0PDLCBKDXQ8R5JLF8JVQZD0LKL" },
+      { platform: "HBO Max", icon: "🎭", url: "https://www.hbomax.com/feature/urn:hbo:feature:GXdp5IQP5IcPCwwEAAAEm" }
+    ],
+    links: [
+      { label: "Full Movie", url: "https://www.netflix.com/title/70131314", type: "movie" },
+      { label: "Official Trailer", url: "https://www.youtube.com/watch?v=YoHD9XEInc0", type: "trailer" },
+      { label: "Teaser Trailer", url: "https://www.youtube.com/watch?v=66TuSJo4dZM", type: "teaser" }
+    ],
     metadata: {
       awards: ["Academy Awards: 4 wins from 8 nominations"],
       visualEffects: "Practical effects emphasized over CGI",
@@ -148,12 +207,25 @@ const sampleMovies = [
     year: 2009,
     director: "Rajkumar Hirani",
     genre: ["Comedy", "Drama"],
-    language: "Hindi",
+    movieLanguage: "Hindi",
+    releaseDate: new Date("2009-12-25"),
     rating: 8.4,
     boxOffice: {
       budget: "₹55 crore",
       worldwide: "₹460 crore"
     },
+    ottPlatforms: [
+      { platform: "Netflix", icon: "🎬", url: "https://www.netflix.com/title/70121522" },
+      { platform: "Prime Video", icon: "📺", url: "https://www.primevideo.com/detail/0GKQY6LQVZ8WJHXQVZ8W" },
+      { platform: "YouTube", icon: "▶️", url: "https://www.youtube.com/watch?v=K0eDlFX9GMc" }
+    ],
+    links: [
+      { label: "Full Movie", url: "https://www.netflix.com/title/70121522", type: "movie" },
+      { label: "Official Trailer", url: "https://www.youtube.com/watch?v=K0eDlFX9GMc", type: "trailer" },
+      { label: "Song: All Izz Well", url: "https://www.youtube.com/watch?v=yJ_DVIRUSyc", type: "song" },
+      { label: "Song: Zoobi Doobi", url: "https://www.youtube.com/watch?v=Kas6akz1jWU", type: "song" },
+      { label: "Song: Give Me Some Sunshine", url: "https://www.youtube.com/watch?v=Kas6akz1jWU", type: "song" }
+    ],
     metadata: {
       awards: ["Filmfare Awards: 6 wins"],
       basedOn: "Novel 'Five Point Someone' by Chetan Bhagat",
@@ -174,12 +246,23 @@ const sampleMovies = [
     year: 1994,
     director: "Quentin Tarantino",
     genre: ["Crime", "Drama"],
-    language: "English",
+    movieLanguage: "English",
+    releaseDate: new Date("1994-10-14"),
     rating: 8.9,
     boxOffice: {
       budget: "$8 million",
       worldwide: "$213.9 million"
     },
+    ottPlatforms: [
+      { platform: "Netflix", icon: "🎬", url: "https://www.netflix.com/title/880640" },
+      { platform: "Prime Video", icon: "📺", url: "https://www.primevideo.com/detail/0PDLCBKDXQ8R5JLF8JVQZD0LKL" },
+      { platform: "Paramount+", icon: "⭐", url: "https://www.paramountplus.com/movies/pulp-fiction" }
+    ],
+    links: [
+      { label: "Full Movie", url: "https://www.netflix.com/title/880640", type: "movie" },
+      { label: "Official Trailer", url: "https://www.youtube.com/watch?v=s7EdQ4FqbhY", type: "trailer" },
+      { label: "25th Anniversary Trailer", url: "https://www.youtube.com/watch?v=tGpTpVyI_OQ", type: "teaser" }
+    ],
     metadata: {
       awards: ["Academy Award for Best Original Screenplay"],
       narrative: "Non-linear narrative structure",
@@ -200,12 +283,25 @@ const sampleMovies = [
     year: 1975,
     director: "Ramesh Sippy",
     genre: ["Action", "Adventure", "Drama"],
-    language: "Hindi",
+    movieLanguage: "Hindi",
+    releaseDate: new Date("1975-08-15"),
     rating: 8.2,
     boxOffice: {
       budget: "₹2 crore",
       worldwide: "₹35 crore"
     },
+    ottPlatforms: [
+      { platform: "Prime Video", icon: "📺", url: "https://www.primevideo.com/detail/0GKQY6LQVZ8WJHXQVZ8W" },
+      { platform: "Netflix", icon: "🎬", url: "https://www.netflix.com/title/70047108" },
+      { platform: "YouTube", icon: "▶️", url: "https://www.youtube.com/watch?v=jGSUHq1iIbI" }
+    ],
+    links: [
+      { label: "Full Movie", url: "https://www.primevideo.com/detail/0GKQY6LQVZ8WJHXQVZ8W", type: "movie" },
+      { label: "Official Trailer", url: "https://www.youtube.com/watch?v=jGSUHq1iIbI", type: "trailer" },
+      { label: "Song: Yeh Dosti", url: "https://www.youtube.com/watch?v=Kas6akz1jWU", type: "song" },
+      { label: "Song: Mehbooba Mehbooba", url: "https://www.youtube.com/watch?v=Kas6akz1jWU", type: "song" },
+      { label: "Song: Holi Ke Din", url: "https://www.youtube.com/watch?v=Kas6akz1jWU", type: "song" }
+    ],
     metadata: {
       awards: ["Filmfare Awards: 7 nominations"],
       legacy: "Considered the greatest Indian film of all time",
@@ -225,12 +321,23 @@ const sampleMovies = [
     year: 2008,
     director: "Christopher Nolan",
     genre: ["Action", "Crime", "Drama"],
-    language: "English",
+    movieLanguage: "English",
+    releaseDate: new Date("2008-07-18"),
     rating: 9.0,
     boxOffice: {
       budget: "$185 million",
       worldwide: "$1.005 billion"
     },
+    ottPlatforms: [
+      { platform: "HBO Max", icon: "🎭", url: "https://www.hbomax.com/feature/urn:hbo:feature:GXdp5IQP5IcPCwwEAAAEm" },
+      { platform: "Prime Video", icon: "📺", url: "https://www.primevideo.com/detail/0PDLCBKDXQ8R5JLF8JVQZD0LKL" },
+      { platform: "YouTube", icon: "▶️", url: "https://www.youtube.com/watch?v=EXeTwQWrcwY" }
+    ],
+    links: [
+      { label: "Full Movie", url: "https://www.hbomax.com/feature/urn:hbo:feature:GXdp5IQP5IcPCwwEAAAEm", type: "movie" },
+      { label: "Official Trailer", url: "https://www.youtube.com/watch?v=EXeTwQWrcwY", type: "trailer" },
+      { label: "Teaser Trailer", url: "https://www.youtube.com/watch?v=yQ5U8suTUw0", type: "teaser" }
+    ],
     metadata: {
       awards: ["Academy Awards: 2 wins including Best Supporting Actor (Heath Ledger)"],
       posthumous: "Heath Ledger's posthumous Oscar win",
@@ -251,12 +358,26 @@ const sampleMovies = [
     year: 2016,
     director: "Nitesh Tiwari",
     genre: ["Biography", "Drama", "Sports"],
-    language: "Hindi",
+    movieLanguage: "Hindi",
+    releaseDate: new Date("2016-12-23"),
     rating: 8.3,
     boxOffice: {
       budget: "₹70 crore",
       worldwide: "₹2,024 crore"
     },
+    ottPlatforms: [
+      { platform: "Netflix", icon: "🎬", url: "https://www.netflix.com/title/80166185" },
+      { platform: "Disney+ Hotstar", icon: "🌟", url: "https://www.hotstar.com/in/movies/dangal" },
+      { platform: "YouTube", icon: "▶️", url: "https://www.youtube.com/watch?v=x_7YlGv9u1g" }
+    ],
+    links: [
+      { label: "Full Movie", url: "https://www.netflix.com/title/80166185", type: "movie" },
+      { label: "Official Trailer", url: "https://www.youtube.com/watch?v=x_7YlGv9u1g", type: "trailer" },
+      { label: "Song: Haanikaarak Bapu", url: "https://www.youtube.com/watch?v=Kas6akz1jWU", type: "song" },
+      { label: "Song: Dhaakad", url: "https://www.youtube.com/watch?v=Kas6akz1jWU", type: "song" },
+      { label: "Song: Gilehriyaan", url: "https://www.youtube.com/watch?v=Kas6akz1jWU", type: "song" },
+      { label: "Song: Naina", url: "https://www.youtube.com/watch?v=Kas6akz1jWU", type: "song" }
+    ],
     metadata: {
       awards: ["Filmfare Awards: 4 wins"],
       basedOn: "True story of Mahavir Singh Phogat and his daughters",

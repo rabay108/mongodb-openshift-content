@@ -75,9 +75,57 @@ db.createCollection('movies', {
             bsonType: 'string'
           }
         },
-        language: {
+        movieLanguage: {
           bsonType: 'string',
           description: 'Primary language of the movie'
+        },
+        releaseDate: {
+          bsonType: 'date',
+          description: 'Movie release date'
+        },
+        ottPlatforms: {
+          bsonType: 'array',
+          description: 'Array of OTT platform objects where movie is available',
+          items: {
+            bsonType: 'object',
+            required: ['platform'],
+            properties: {
+              platform: {
+                bsonType: 'string',
+                description: 'OTT platform name'
+              },
+              icon: {
+                bsonType: 'string',
+                description: 'Platform icon or emoji'
+              },
+              url: {
+                bsonType: 'string',
+                description: 'Streaming URL on the platform'
+              }
+            }
+          }
+        },
+        links: {
+          bsonType: 'array',
+          description: 'Array of link objects for movie, trailer, teaser, songs',
+          items: {
+            bsonType: 'object',
+            required: ['label', 'url'],
+            properties: {
+              label: {
+                bsonType: 'string',
+                description: 'Link label/description'
+              },
+              url: {
+                bsonType: 'string',
+                description: 'URL to the content'
+              },
+              type: {
+                bsonType: 'string',
+                description: 'Type of link: movie, trailer, teaser, song'
+              }
+            }
+          }
         },
         rating: {
           bsonType: 'double',
@@ -142,12 +190,17 @@ db.movies.createIndex(
 );
 print('Compound index created on year and movieName');
 
-// Create text index for full-text search on movieName and director
+// Create text index for full-text search on movieName, director, and movieLanguage
+// Using 'none' as default_language for language-agnostic search
 db.movies.createIndex(
-  { movieName: 'text', director: 'text', actors: 'text', actresses: 'text' },
-  { name: 'idx_text_search', weights: { movieName: 10, director: 5, actors: 3, actresses: 3 } }
+  { movieName: 'text', director: 'text', actors: 'text', actresses: 'text', movieLanguage: 'text' },
+  {
+    name: 'idx_text_search',
+    weights: { movieName: 10, director: 5, actors: 3, actresses: 3, movieLanguage: 2 },
+    default_language: 'none'
+  }
 );
-print('Text index created for full-text search');
+print('Text index created for full-text search with language-agnostic configuration');
 
 print('========================================');
 print('Schema initialization completed successfully!');
