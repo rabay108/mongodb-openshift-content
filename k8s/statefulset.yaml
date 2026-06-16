@@ -22,6 +22,8 @@ spec:
         app: mongodb
         component: database
     spec:
+      # Use dedicated service account with proper SCC permissions
+      serviceAccountName: mongodb-sa
       # Init container to set up initialization scripts
       initContainers:
         - name: init-scripts

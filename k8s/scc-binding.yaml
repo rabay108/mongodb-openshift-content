@@ -1,0 +1,23 @@
+---
+# RoleBinding to grant anyuid SCC to MongoDB ServiceAccount
+# This is required for Bitnami MongoDB which runs as UID 1001
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mongodb-anyuid-scc
+  namespace: content-db
+  labels:
+    app: mongodb
+    component: database
+  annotations:
+    description: "Grants anyuid SCC to mongodb-sa for running as UID 1001"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:openshift:scc:anyuid
+subjects:
+  - kind: ServiceAccount
+    name: mongodb-sa
+    namespace: content-db
+
+# Made with Bob
