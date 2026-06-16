@@ -136,15 +136,15 @@ director_bio: {
 
 ```javascript
 // Query works for both old and new documents
-db.movies.find({ year: { $gte: 1970 } })
+db.content_001.find({ year: { $gte: 1970 } })
 
 // Query with new field - old docs return null
-db.movies.find({}, { movieLanguage: 1, releaseDate: 1 })
+db.content_001.find({}, { movieLanguage: 1, releaseDate: 1 })
 // Old doc: { movieLanguage: null, releaseDate: null }
 // New doc: { movieLanguage: "English", releaseDate: ISODate(...) }
 
 // Query with old field - still works!
-db.movies.find({ language: "English" })
+db.content_001.find({ language: "English" })
 // Returns old documents that have 'language' field
 ```
 
@@ -176,11 +176,11 @@ If you want to update old records with new fields:
 ### Option 1: Gradual Migration (Recommended)
 ```javascript
 // Update documents as they're accessed
-db.movies.find({ movieLanguage: { $exists: false } }).forEach(doc => {
-  db.movies.updateOne(
+db.content_001.find({ movieLanguage: { $exists: false } }).forEach(doc => {
+  db.content_001.updateOne(
     { _id: doc._id },
-    { 
-      $set: { 
+    {
+      $set: {
         movieLanguage: doc.language,
         releaseDate: new Date(doc.year + "-01-01"),
         ottPlatforms: [],
@@ -227,7 +227,7 @@ required: ['movieName', 'year']
 
 ### Test 1: Insert Old-Style Document
 ```javascript
-db.movies.insertOne({
+db.content_001.insertOne({
   movieName: "Old Movie",
   year: 2000,
   language: "English"  // old field
@@ -237,7 +237,7 @@ db.movies.insertOne({
 
 ### Test 2: Insert New-Style Document
 ```javascript
-db.movies.insertOne({
+db.content_001.insertOne({
   movieName: "New Movie",
   year: 2024,
   movieLanguage: "English",  // new field
@@ -250,7 +250,7 @@ db.movies.insertOne({
 
 ### Test 3: Query Both
 ```javascript
-db.movies.find({ year: { $gte: 2000 } });
+db.content_001.find({ year: { $gte: 2000 } });
 // ✅ Returns both old and new documents
 ```
 

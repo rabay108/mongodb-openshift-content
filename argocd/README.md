@@ -345,8 +345,8 @@ oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0r
 # Inside mongosh, run:
 use contentdb
 show collections
-db.movies.countDocuments()  // Should return 10
-db.movies.getIndexes()      // Should show 5 indexes
+db.content_001.countDocuments()  // Should return 10
+db.content_001.getIndexes()      // Should show 5 indexes
 exit
 ```
 
@@ -371,7 +371,7 @@ oc port-forward -n content-db svc/mongodb-service 27017:27017 &
 mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/contentdb?authSource=admin"
 
 # Run a test query
-db.movies.find({ rating: { $gt: 8.5 } }, { movieName: 1, year: 1, rating: 1 })
+db.content_001.find({ rating: { $gt: 8.5 } }, { movieName: 1, year: 1, rating: 1 })
 ```
 
 ### 4. Verify Resource Status

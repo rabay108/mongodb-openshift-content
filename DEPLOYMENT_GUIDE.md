@@ -613,7 +613,7 @@ oc get pods -n content-db
 oc describe pod mongodb-0 -n content-db
 
 # Check pod events
-oc get events -n movies-db --sort-by='.lastTimestamp' | tail -20
+oc get events -n content-db --sort-by='.lastTimestamp' | tail -20
 ```
 
 **Expected Output:**
@@ -644,13 +644,13 @@ mongodb-pvc   Bound    pvc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx   10Gi       RWO
 
 ```bash
 # View MongoDB container logs
-oc logs -n movies-db mongodb-0 -c mongodb
+oc logs -n content-db mongodb-0 -c mongodb
 
 # View init container logs (database initialization)
-oc logs -n movies-db mongodb-0 -c init-scripts
+oc logs -n content-db mongodb-0 -c init-scripts
 
 # Follow logs in real-time (press Ctrl+C to stop)
-oc logs -n movies-db mongodb-0 -c mongodb -f
+oc logs -n content-db mongodb-0 -c mongodb -f
 ```
 
 **Expected Log Output (MongoDB):**
@@ -676,7 +676,7 @@ Initialization Complete!
 
 ```bash
 # Wait for pod to be ready (timeout: 5 minutes)
-oc wait --for=condition=ready pod -l app=mongodb -n movies-db --timeout=300s
+oc wait --for=condition=ready pod -l app=mongodb -n content-db --timeout=300s
 ```
 
 **Expected Output:**
@@ -694,7 +694,7 @@ pod/mongodb-0 condition met
 
 ```bash
 # Execute mongosh inside the pod
-oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin
+oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin
 ```
 
 **Expected Output:**
@@ -717,8 +717,8 @@ Inside the mongosh shell:
 // List all databases
 show dbs
 
-// Switch to moviesdb
-use moviesdb
+// Switch to contentdb
+use contentdb
 
 // Show collections
 show collections
@@ -729,9 +729,9 @@ show collections
 admin     100.00 KiB
 config    108.00 KiB
 local      72.00 KiB
-moviesdb  200.00 KiB
+contentdb  200.00 KiB
 
-switched to db moviesdb
+switched to db contentdb
 
 content_001
 ```
@@ -739,11 +739,11 @@ content_001
 ### 6.3 Verify Collection and Document Count
 
 ```javascript
-// Count documents in movies collection
-db.movies.countDocuments()
+// Count documents in content_001 collection
+db.content_001.countDocuments()
 
 // View collection stats
-db.movies.stats()
+db.content_001.stats()
 ```
 
 **Expected Output:**
@@ -751,7 +751,7 @@ db.movies.stats()
 10
 
 {
-  ns: 'moviesdb.movies',
+  ns: 'contentdb.content_001',
   size: xxxxx,
   count: 10,
   ...
@@ -762,7 +762,7 @@ db.movies.stats()
 
 ```javascript
 // List all indexes
-db.movies.getIndexes()
+db.content_001.getIndexes()
 ```
 
 **Expected Output:** Should show 6 indexes (including the default `_id` index):
@@ -776,23 +776,23 @@ db.movies.getIndexes()
 ### 6.5 Query Sample Data
 
 ```javascript
-// Find all movies
-db.movies.find().pretty()
+// Find all content items
+db.content_001.find().pretty()
 
-// Find movies with rating > 8.5
-db.movies.find(
+// Find content items with rating > 8.5
+db.content_001.find(
   { rating: { $gt: 8.5 } },
   { movieName: 1, year: 1, rating: 1, _id: 0 }
 )
 
-// Find movies by year
-db.movies.find({ year: 1994 }, { movieName: 1, year: 1 })
+// Find content items by year
+db.content_001.find({ year: 1994 }, { movieName: 1, year: 1 })
 
-// Find movies by actor
-db.movies.find({ actors: "Aamir Khan" }, { movieName: 1, year: 1 })
+// Find content items by actor
+db.content_001.find({ actors: "Aamir Khan" }, { movieName: 1, year: 1 })
 ```
 
-**Expected Output (movies with rating > 8.5):**
+**Expected Output (content items with rating > 8.5):**
 ```
 [
   { movieName: 'The Shawshank Redemption', year: 1994, rating: 9.3 },
@@ -1008,16 +1008,16 @@ oc logs -n content-db mongodb-0 -c init-scripts
    oc describe nodes | grep -A 5 "Allocated resources"
    
    # Check pod resource requests
-   oc describe pod mongodb-0 -n movies-db | grep -A 10 "Requests"
+   oc describe pod mongodb-0 -n content-db | grep -A 10 "Requests"
    ```
 
 3. **Image Pull Issues**:
    ```bash
    # Check image pull status
-   oc get events -n movies-db | grep -i pull
+   oc get events -n content-db | grep -i pull
    
    # Verify image exists
-   oc describe pod mongodb-0 -n movies-db | grep -i image
+   oc describe pod mongodb-0 -n content-db | grep -i image
    ```
 
 ### MongoDB Pod Not Starting
@@ -1027,42 +1027,42 @@ oc logs -n content-db mongodb-0 -c init-scripts
 **Diagnosis**:
 ```bash
 # Check pod status
-oc get pod mongodb-0 -n movies-db
+oc get pod mongodb-0 -n content-db
 
 # View pod events
-oc get events -n movies-db --sort-by='.lastTimestamp' | grep mongodb-0
+oc get events -n content-db --sort-by='.lastTimestamp' | grep mongodb-0
 
 # Check pod logs
-oc logs -n movies-db mongodb-0 -c mongodb
-oc logs -n movies-db mongodb-0 -c init-scripts --previous
+oc logs -n content-db mongodb-0 -c mongodb
+oc logs -n content-db mongodb-0 -c init-scripts --previous
 ```
 
 **Solutions**:
 
 1. **Check Init Container Logs**:
    ```bash
-   oc logs -n movies-db mongodb-0 -c init-scripts
+   oc logs -n content-db mongodb-0 -c init-scripts
    ```
 
 2. **Verify Secret Exists**:
    ```bash
-   oc get secret mongodb-secret -n movies-db
-   oc describe secret mongodb-secret -n movies-db
+   oc get secret mongodb-secret -n content-db
+   oc describe secret mongodb-secret -n content-db
    ```
 
 3. **Verify ConfigMap Exists**:
    ```bash
-   oc get configmap mongodb-init-scripts -n movies-db
-   oc describe configmap mongodb-init-scripts -n movies-db
+   oc get configmap mongodb-init-scripts -n content-db
+   oc describe configmap mongodb-init-scripts -n content-db
    ```
 
 4. **Restart Pod**:
    ```bash
    # Delete pod (StatefulSet will recreate it)
-   oc delete pod mongodb-0 -n movies-db
+   oc delete pod mongodb-0 -n content-db
    
    # Wait for pod to be ready
-   oc wait --for=condition=ready pod mongodb-0 -n movies-db --timeout=300s
+   oc wait --for=condition=ready pod mongodb-0 -n content-db --timeout=300s
    ```
 
 ### Cannot Connect to MongoDB
@@ -1106,10 +1106,10 @@ oc exec -it -n movies-db mongodb-0 -- mongosh --eval "db.adminCommand('ping')"
 **Diagnosis**:
 ```bash
 # Check init container logs
-oc logs -n movies-db mongodb-0 -c init-scripts
+oc logs -n content-db mongodb-0 -c init-scripts
 
 # Connect to MongoDB and check
-oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin --eval "show dbs"
+oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin --eval "show dbs"
 ```
 
 **Solutions**:
@@ -1117,21 +1117,21 @@ oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd
 1. **Verify ConfigMap is Mounted**:
    ```bash
    # Check if scripts are mounted
-   oc exec -it -n movies-db mongodb-0 -- ls -la /docker-entrypoint-initdb.d/
+   oc exec -it -n content-db mongodb-0 -- ls -la /docker-entrypoint-initdb.d/
    ```
 
 2. **Manually Run Initialization Scripts**:
    ```bash
    # Copy init scripts to pod
-   oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin moviesdb /docker-entrypoint-initdb.d/init-schema.js
+   oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin contentdb /docker-entrypoint-initdb.d/init-schema.js
    
-   oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin moviesdb /docker-entrypoint-initdb.d/sample-data.js
+   oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin contentdb /docker-entrypoint-initdb.d/sample-data.js
    ```
 
 3. **Recreate Pod**:
    ```bash
    # Delete pod to trigger re-initialization
-   oc delete pod mongodb-0 -n movies-db
+   oc delete pod mongodb-0 -n content-db
    ```
 
 ### Change MongoDB Password
@@ -1149,13 +1149,13 @@ echo "New Password: $NEW_PASSWORD"
 oc create secret generic mongodb-secret \
   --from-literal=mongodb-root-username=admin \
   --from-literal=mongodb-root-password="$NEW_PASSWORD" \
-  --dry-run=client -o yaml | oc apply -f - -n movies-db
+  --dry-run=client -o yaml | oc apply -f - -n content-db
 
 # Restart MongoDB pod to use new password
-oc delete pod mongodb-0 -n movies-db
+oc delete pod mongodb-0 -n content-db
 
 # Wait for pod to be ready
-oc wait --for=condition=ready pod mongodb-0 -n movies-db --timeout=300s
+oc wait --for=condition=ready pod mongodb-0 -n content-db --timeout=300s
 
 # Update the secret in Git repository
 echo -n "$NEW_PASSWORD" | base64
@@ -1172,16 +1172,16 @@ echo -n "$NEW_PASSWORD" | base64
 oc logs -n openshift-gitops -l app.kubernetes.io/name=argocd-application-controller -f
 
 # MongoDB logs
-oc logs -n movies-db mongodb-0 -c mongodb -f
+oc logs -n content-db mongodb-0 -c mongodb -f
 
 # Init container logs
-oc logs -n movies-db mongodb-0 -c init-scripts
+oc logs -n content-db mongodb-0 -c init-scripts
 
-# All events in movies-db namespace
-oc get events -n movies-db --sort-by='.lastTimestamp'
+# All events in content-db namespace
+oc get events -n content-db --sort-by='.lastTimestamp'
 
 # Pod describe (shows events and status)
-oc describe pod mongodb-0 -n movies-db
+oc describe pod mongodb-0 -n content-db
 ```
 
 ---

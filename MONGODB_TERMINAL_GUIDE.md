@@ -175,37 +175,37 @@ db.getCollectionInfos({ name: "content_001" })
 # Set credentials as variables (optional, for convenience)
 export MONGO_USER="admin"
 export MONGO_PASS="M0ng0DB\$ecur3P@ssw0rd2024!"
-export MONGO_AUTH="mongodb://${MONGO_USER}:${MONGO_PASS}@localhost:27017/moviesdb?authSource=admin"
+export MONGO_AUTH="mongodb://${MONGO_USER}:${MONGO_PASS}@localhost:27017/contentdb?authSource=admin"
 
 # Count all documents
-oc exec mongodb-0 -n movies-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.movies.countDocuments()"
+oc exec mongodb-0 -n content-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.content_001.countDocuments()"
 
 # View one document
-oc exec mongodb-0 -n movies-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.movies.findOne()"
+oc exec mongodb-0 -n content-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.content_001.findOne()"
 
 # Check for new fields
-oc exec mongodb-0 -n movies-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.movies.findOne({}, {movieName:1, movieLanguage:1, releaseDate:1, ottPlatforms:1, links:1})"
+oc exec mongodb-0 -n content-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.content_001.findOne({}, {movieName:1, movieLanguage:1, releaseDate:1, ottPlatforms:1, links:1})"
 
 # Count documents with new fields
-oc exec mongodb-0 -n movies-db -- mongosh "${MONGO_AUTH}" --quiet --eval "print('movieLanguage: ' + db.movies.countDocuments({movieLanguage: {\$exists: true}})); print('releaseDate: ' + db.movies.countDocuments({releaseDate: {\$exists: true}})); print('ottPlatforms: ' + db.movies.countDocuments({ottPlatforms: {\$exists: true}})); print('links: ' + db.movies.countDocuments({links: {\$exists: true}}))"
+oc exec mongodb-0 -n content-db -- mongosh "${MONGO_AUTH}" --quiet --eval "print('movieLanguage: ' + db.content_001.countDocuments({movieLanguage: {\$exists: true}})); print('releaseDate: ' + db.content_001.countDocuments({releaseDate: {\$exists: true}})); print('ottPlatforms: ' + db.content_001.countDocuments({ottPlatforms: {\$exists: true}})); print('links: ' + db.content_001.countDocuments({links: {\$exists: true}}))"
 
 # List all movie names
-oc exec mongodb-0 -n movies-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.movies.find({}, {movieName:1, year:1, _id:0}).forEach(printjson)"
+oc exec mongodb-0 -n content-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.content_001.find({}, {movieName:1, year:1, _id:0}).forEach(printjson)"
 
 # Find movies by year
-oc exec mongodb-0 -n movies-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.movies.find({year: 2010}, {movieName:1, year:1, _id:0}).forEach(printjson)"
+oc exec mongodb-0 -n content-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.content_001.find({year: 2010}, {movieName:1, year:1, _id:0}).forEach(printjson)"
 
 # Check database size
-oc exec mongodb-0 -n movies-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.stats()"
+oc exec mongodb-0 -n content-db -- mongosh "${MONGO_AUTH}" --quiet --eval "db.stats()"
 ```
 
 **Alternative: Direct commands without variables**
 ```bash
 # Count all documents (direct)
-oc exec mongodb-0 -n movies-db -- mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/moviesdb?authSource=admin" --quiet --eval "db.movies.countDocuments()"
+oc exec mongodb-0 -n content-db -- mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/contentdb?authSource=admin" --quiet --eval "db.content_001.countDocuments()"
 
 # View one document (direct)
-oc exec mongodb-0 -n movies-db -- mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/moviesdb?authSource=admin" --quiet --eval "db.movies.findOne()"
+oc exec mongodb-0 -n content-db -- mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0rd2024!@localhost:27017/contentdb?authSource=admin" --quiet --eval "db.content_001.findOne()"
 ```
 
 ---
@@ -298,7 +298,7 @@ oc exec mongodb-0 -n content-db -- mongosh "mongodb://admin:M0ng0DB\$ecur3P@ssw0
 | View one item | `db.content_001.findOne()` |
 | Search by name | `db.content_001.find({movieName: "Inception"})` |
 | Search by year | `db.content_001.find({year: 2010})` |
-| Check new fields | `db.movies.findOne({}, {movieLanguage:1, releaseDate:1})` |
+| Check new fields | `db.content_001.findOne({}, {movieLanguage:1, releaseDate:1})` |
 | Exit MongoDB | `exit` or `Ctrl+D` |
 
 ### Quick Connect Commands

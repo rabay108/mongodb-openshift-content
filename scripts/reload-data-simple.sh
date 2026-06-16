@@ -15,10 +15,10 @@ POD_NAME="mongodb-0"
 echo ""
 echo "Step 1: Backing up existing data..."
 kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh contentdb --quiet --eval "
-  const count = db.movies.countDocuments();
+  const count = db.content_001.countDocuments();
   print('Current documents: ' + count);
   if (count > 0) {
-    db.movies.find().forEach(function(doc) {
+    db.content_001.find().forEach(function(doc) {
       db.movies_backup.insertOne(doc);
     });
     print('✅ Backed up ' + count + ' documents to movies_backup collection');
@@ -28,7 +28,7 @@ kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh contentdb --quiet --eval "
 echo ""
 echo "Step 2: Dropping movies collection..."
 kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh contentdb --quiet --eval "
-  db.movies.drop();
+  db.content_001.drop();
   print('✅ Collection dropped');
 "
 
@@ -43,10 +43,10 @@ kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh < /docker-entrypoint-initdb.
 echo ""
 echo "Step 5: Verifying reload..."
 kubectl exec ${POD_NAME} -n ${NAMESPACE} -- mongosh contentdb --quiet --eval "
-  const count = db.movies.countDocuments();
+  const count = db.content_001.countDocuments();
   print('✅ Total documents: ' + count);
   
-  const sample = db.movies.findOne();
+  const sample = db.content_001.findOne();
   print('');
   print('New fields verification:');
   print('  movieLanguage: ' + (sample.movieLanguage ? '✅' : '❌'));

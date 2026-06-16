@@ -480,10 +480,10 @@ oc exec -it -n content-db mongodb-0 -- ls -la /docker-entrypoint-initdb.d/
 
 ```bash
 # Check if database exists
-oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin --eval "show dbs"
+oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin --eval "show dbs"
 
 # Manually run initialization scripts
-oc exec -it -n movies-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin moviesdb < /docker-entrypoint-initdb.d/init-schema.js
+oc exec -it -n content-db mongodb-0 -- mongosh -u admin -p 'M0ng0DB$ecur3P@ssw0rd2024!' --authenticationDatabase admin contentdb < /docker-entrypoint-initdb.d/init-schema.js
 ```
 
 ### Resource Issues
@@ -504,50 +504,50 @@ oc describe pod -n content-db mongodb-0 | grep -A 5 "Limits"
 
 ```bash
 # Create a backup using mongodump
-oc exec -it -n movies-db mongodb-0 -- mongodump \
+oc exec -it -n content-db mongodb-0 -- mongodump \
   --username=admin \
   --password='M0ng0DB$ecur3P@ssw0rd2024!' \
   --authenticationDatabase=admin \
-  --db=moviesdb \
+  --db=contentdb \
   --out=/tmp/backup
 
 # Copy backup to local machine
-oc cp movies-db/mongodb-0:/tmp/backup ./mongodb-backup
+oc cp content-db/mongodb-0:/tmp/backup ./mongodb-backup
 ```
 
 ### Restore Database
 
 ```bash
 # Copy backup to pod
-oc cp ./mongodb-backup movies-db/mongodb-0:/tmp/restore
+oc cp ./mongodb-backup content-db/mongodb-0:/tmp/restore
 
 # Restore using mongorestore
-oc exec -it -n movies-db mongodb-0 -- mongorestore \
+oc exec -it -n content-db mongodb-0 -- mongorestore \
   --username=admin \
   --password='M0ng0DB$ecur3P@ssw0rd2024!' \
   --authenticationDatabase=admin \
-  --db=moviesdb \
-  /tmp/restore/moviesdb
+  --db=contentdb \
+  /tmp/restore/contentdb
 ```
 
 ### Scale Down/Up
 
 ```bash
 # Scale down (stop MongoDB)
-oc scale statefulset mongodb -n movies-db --replicas=0
+oc scale statefulset mongodb -n content-db --replicas=0
 
 # Scale up (start MongoDB)
-oc scale statefulset mongodb -n movies-db --replicas=1
+oc scale statefulset mongodb -n content-db --replicas=1
 ```
 
 ### Update MongoDB Version
 
 ```bash
 # Edit StatefulSet to change image version
-oc edit statefulset mongodb -n movies-db
+oc edit statefulset mongodb -n content-db
 
 # Or use patch
-oc patch statefulset mongodb -n movies-db -p '{"spec":{"template":{"spec":{"containers":[{"name":"mongodb","image":"mongo:7.0.5"}]}}}}'
+oc patch statefulset mongodb -n content-db -p '{"spec":{"template":{"spec":{"containers":[{"name":"mongodb","image":"mongo:7.0.5"}]}}}}'
 ```
 
 ### Clean Up

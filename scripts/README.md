@@ -49,14 +49,14 @@ kubectl exec -it mongodb-0 -n content-db -- mongosh contentdb
 
 ### Step 2: Backup Existing Data (Optional)
 ```javascript
-db.movies.find().forEach(function(doc) {
+db.content_001.find().forEach(function(doc) {
   db.movies_backup.insertOne(doc);
 });
 ```
 
 ### Step 3: Drop Collection
 ```javascript
-db.movies.drop();
+db.content_001.drop();
 ```
 
 ### Step 4: Exit and Reload Scripts
@@ -68,7 +68,7 @@ kubectl exec mongodb-0 -n content-db -- mongosh < /docker-entrypoint-initdb.d/sa
 
 ### Step 5: Verify
 ```bash
-kubectl exec mongodb-0 -n content-db -- mongosh contentdb --eval "db.movies.findOne()"
+kubectl exec mongodb-0 -n content-db -- mongosh contentdb --eval "db.content_001.findOne()"
 ```
 
 ## After ArgoCD Sync
@@ -90,9 +90,9 @@ If you need to restore the backup:
 
 ```bash
 kubectl exec mongodb-0 -n content-db -- mongosh contentdb --eval "
-  db.movies.drop();
+  db.content_001.drop();
   db.movies_backup.find().forEach(function(doc) {
-    db.movies.insertOne(doc);
+    db.content_001.insertOne(doc);
   });
 "
 ```
