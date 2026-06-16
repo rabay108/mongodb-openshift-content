@@ -6,12 +6,12 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mongodb-init-scripts
-  namespace: movies-db
+  namespace: content-db
   labels:
     app: mongodb
     component: initialization
   annotations:
-    description: "Initialization scripts for MongoDB movies database"
+    description: "Initialization scripts for MongoDB flexible content database (Movies, Books, Music)"
 data:
   # Schema initialization script
   # Creates the movies collection with validation and indexes
@@ -653,5 +653,712 @@ data:
     print('Initialization Complete!');
     print('You can now query the movies collection');
     print('========================================');
+  
+  # Content Types Metadata - Flexible Schema
+  # Defines content type codes and subtype mappings
+  content-types.js: |
+    // Content Types and Subtypes Metadata
+    // This file defines the content type codes and their associated metadata
+    // Used by the flexible schema system to support multiple content types
+
+    /**
+     * Content Type Definitions
+     * Each content type has a unique 3-digit code and metadata
+     * Format: "code": { name, icon, description }
+     */
+    const contentTypes = {
+      "001": { 
+        name: "Movies", 
+        icon: "🎬", 
+        description: "Film and cinema content" 
+      },
+      "002": { 
+        name: "Books", 
+        icon: "📚", 
+        description: "Written literature" 
+      },
+      "003": { 
+        name: "Music", 
+        icon: "🎵", 
+        description: "Audio recordings" 
+      }
+    };
+
+    /**
+     * Content Subtype Definitions
+     * Each content type can have multiple subtypes (categories/genres)
+     * Format: "contentTypeCode": { "subtypeCode": "subtypeName" }
+     */
+    const contentSubtypes = {
+      "001": { // Movies
+        "001": "Action",
+        "002": "Drama",
+        "003": "Comedy",
+        "004": "Romance",
+        "005": "Thriller",
+        "006": "Horror",
+        "007": "Sci-Fi",
+        "008": "Crime"
+      },
+      "002": { // Books
+        "001": "Fiction",
+        "002": "Non-Fiction",
+        "003": "Biography",
+        "004": "Mystery",
+        "005": "Fantasy"
+      },
+      "003": { // Music
+        "001": "Pop",
+        "002": "Rock",
+        "003": "Classical",
+        "004": "Jazz",
+        "005": "Hip-Hop"
+      }
+    };
+
+    /**
+     * Helper function to get content type name from code
+     * @param {string} code - 3-digit content type code
+     * @returns {string} Content type name or 'Unknown'
+     */
+    function getContentTypeName(code) {
+      return contentTypes[code] ? contentTypes[code].name : 'Unknown';
+    }
+
+    /**
+     * Helper function to get subtype name from codes
+     * @param {string} contentTypeCode - 3-digit content type code
+     * @param {string} subtypeCode - 3-digit subtype code
+     * @returns {string} Subtype name or 'Unknown'
+     */
+    function getSubtypeName(contentTypeCode, subtypeCode) {
+      if (contentSubtypes[contentTypeCode] && contentSubtypes[contentTypeCode][subtypeCode]) {
+        return contentSubtypes[contentTypeCode][subtypeCode];
+      }
+      return 'Unknown';
+    }
+
+    /**
+     * Helper function to get all subtypes for a content type
+     * @param {string} contentTypeCode - 3-digit content type code
+     * @returns {object} Object with subtype codes as keys and names as values
+     */
+    function getSubtypesForContentType(contentTypeCode) {
+      return contentSubtypes[contentTypeCode] || {};
+    }
+
+    // Export for use in other scripts
+    if (typeof module !== 'undefined' && module.exports) {
+      module.exports = {
+        contentTypes,
+        contentSubtypes,
+        getContentTypeName,
+        getSubtypeName,
+        getSubtypesForContentType
+      };
+    }
+
+  # Schema Template Generator - Flexible Schema
+  # Reusable function to generate schema for any content type
+  schema-template.js: |
+    // Schema Template Generator
+    // This file provides a reusable function to generate MongoDB schema validation
+    // for any content type with core fields + content-specific details
+
+    /**
+     * Generate a flexible schema validator for a content type
+     * 
+     * @param {string} contentTypeCode - 3-digit content type code (e.g., "001" for Movies)
+     * @param {object} detailsSchema - Optional schema definition for the details field
+     * @returns {object} MongoDB collection validator configuration
+     * 
+     * Core Fields (all content types):
+     * - contentType: 3-digit code identifying the content type
+     * - contentSubtype: Array of 3-digit codes for categories/genres
+     * - title: Main title/name of the content
+     * - year: Release/publication year
+     * - creators: Array of primary creators (directors, authors, artists)
+     * - contributors: Array of objects with name/role (actors, editors, musicians)
+     * - language: Primary language
+     * - releaseDate: Official release date
+     * - rating: Numeric rating (0-10)
+     * - platforms: Array of platform objects (streaming, stores, etc.)
+     * - links: Array of link objects (trailers, samples, etc.)
+     * - details: Content-specific fields (flexible object)
+     * - metadata: Extensible metadata for future additions
+     */
+    function generateContentSchema(contentTypeCode, detailsSchema = null) {
+      // Base schema properties that apply to all content types
+      const baseProperties = {
+        contentType: {
+          bsonType: 'string',
+          pattern: '^[0-9]{3}$',
+          description: 'Content type code - 3-digit identifier (e.g., 001 for Movies)'
+        },
+        contentSubtype: {
+          bsonType: 'array',
+          description: 'Array of subtype codes (genres/categories) - 3-digit identifiers',
+          items: {
+            bsonType: 'string',
+            pattern: '^[0-9]{3}$'
+          }
+        },
+        title: {
+          bsonType: 'string',
+          description: 'Title/name of the content - required field'
+        },
+        year: {
+          bsonType: 'int',
+          minimum: 1800,
+          maximum: 2100,
+          description: 'Release/publication year - must be between 1800 and 2100'
+        },
+        creators: {
+          bsonType: 'array',
+          description: 'Array of primary creator names (directors, authors, artists)',
+          items: {
+            bsonType: 'string'
+          }
+        },
+        contributors: {
+          bsonType: 'array',
+          description: 'Array of contributor objects with name and role',
+          items: {
+            bsonType: 'object',
+            required: ['name', 'role'],
+            properties: {
+              name: {
+                bsonType: 'string',
+                description: 'Contributor name'
+              },
+              role: {
+                bsonType: 'string',
+                description: 'Role/contribution type (actor, editor, musician, etc.)'
+              }
+            }
+          }
+        },
+        language: {
+          bsonType: 'string',
+          description: 'Primary language of the content'
+        },
+        releaseDate: {
+          bsonType: 'date',
+          description: 'Official release/publication date'
+        },
+        rating: {
+          bsonType: 'double',
+          minimum: 0,
+          maximum: 10,
+          description: 'Content rating between 0 and 10'
+        },
+        platforms: {
+          bsonType: 'array',
+          description: 'Array of OTT platform objects where content is available for streaming/purchase',
+          items: {
+            bsonType: 'object',
+            required: ['platform'],
+            properties: {
+              platform: {
+                bsonType: 'string',
+                description: 'OTT platform name (Netflix, Amazon Prime, Disney+, Hulu, HBO Max, Spotify, etc.)'
+              },
+              icon: {
+                bsonType: 'string',
+                description: 'Platform icon or emoji (🎬, 📺, 🎵, etc.)'
+              },
+              url: {
+                bsonType: 'string',
+                description: 'Direct URL to watch/stream the content on this platform'
+              }
+            }
+          }
+        },
+        links: {
+          bsonType: 'array',
+          description: 'Array of link objects for trailers, teasers, promos, reviews, behind-the-scenes, etc.',
+          items: {
+            bsonType: 'object',
+            required: ['label', 'url'],
+            properties: {
+              label: {
+                bsonType: 'string',
+                description: 'Link label/description (e.g., "Official Trailer", "Teaser", "Behind the Scenes")'
+              },
+              url: {
+                bsonType: 'string',
+                description: 'URL to the content (YouTube, Vimeo, official website, etc.)'
+              },
+              type: {
+                bsonType: 'string',
+                description: 'Type of link: trailer, teaser, promo, review, behind-the-scenes, interview, etc.'
+              }
+            }
+          }
+        },
+        metadata: {
+          bsonType: 'object',
+          description: 'Extensible metadata field for future additions - can contain any additional properties'
+        }
+      };
+
+      // Add details field if schema is provided
+      if (detailsSchema) {
+        baseProperties.details = detailsSchema;
+      } else {
+        // Default flexible details field
+        baseProperties.details = {
+          bsonType: 'object',
+          description: 'Content-specific details - flexible object for type-specific fields'
+        };
+      }
+
+      // Return complete validator configuration
+      return {
+        validator: {
+          $jsonSchema: {
+            bsonType: 'object',
+            required: ['contentType', 'title', 'year'],
+            properties: baseProperties
+          }
+        },
+        validationLevel: 'moderate',
+        validationAction: 'warn'
+      };
+    }
+
+    /**
+     * Generate movie-specific details schema
+     * Includes fields specific to movies: runtime, songs (with links), boxOffice
+     * 
+     * @returns {object} Details schema for movies
+     */
+    function getMovieDetailsSchema() {
+      return {
+        bsonType: 'object',
+        description: 'Movie-specific details including runtime, songs, and box office',
+        properties: {
+          runtime: {
+            bsonType: 'int',
+            minimum: 1,
+            description: 'Movie runtime in minutes'
+          },
+          songs: {
+            bsonType: 'array',
+            description: 'Array of song objects from the movie with links to YouTube, Spotify, etc.',
+            items: {
+              bsonType: 'object',
+              required: ['title', 'singer'],
+              properties: {
+                title: {
+                  bsonType: 'string',
+                  description: 'Song title'
+                },
+                singer: {
+                  bsonType: 'string',
+                  description: 'Singer/artist name'
+                },
+                duration: {
+                  bsonType: 'string',
+                  description: 'Song duration (e.g., "3:45")'
+                },
+                links: {
+                  bsonType: 'array',
+                  description: 'Array of link objects for the song (YouTube, Spotify, etc.)',
+                  items: {
+                    bsonType: 'object',
+                    required: ['platform', 'url'],
+                    properties: {
+                      platform: {
+                        bsonType: 'string',
+                        description: 'Platform name (YouTube, Spotify, Apple Music, etc.)'
+                      },
+                      url: {
+                        bsonType: 'string',
+                        description: 'URL to the song on the platform'
+                      },
+                      icon: {
+                        bsonType: 'string',
+                        description: 'Platform icon or emoji'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          boxOffice: {
+            bsonType: 'object',
+            description: 'Box office collection details',
+            properties: {
+              budget: {
+                bsonType: 'string',
+                description: 'Production budget'
+              },
+              worldwide: {
+                bsonType: 'string',
+                description: 'Worldwide box office collection'
+              }
+            }
+          }
+        }
+      };
+    }
+
+    /**
+     * Generate book-specific details schema
+     * Includes fields specific to books: pages, publisher, ISBN
+     * 
+     * @returns {object} Details schema for books
+     */
+    function getBookDetailsSchema() {
+      return {
+        bsonType: 'object',
+        description: 'Book-specific details including pages, publisher, and ISBN',
+        properties: {
+          pages: {
+            bsonType: 'int',
+            minimum: 1,
+            description: 'Number of pages'
+          },
+          publisher: {
+            bsonType: 'string',
+            description: 'Publisher name'
+          },
+          isbn: {
+            bsonType: 'string',
+            description: 'ISBN number'
+          },
+          edition: {
+            bsonType: 'string',
+            description: 'Edition information'
+          }
+        }
+      };
+    }
+
+    /**
+     * Generate music-specific details schema
+     * Includes fields specific to music: duration, album, tracks
+     * 
+     * @returns {object} Details schema for music
+     */
+    function getMusicDetailsSchema() {
+      return {
+        bsonType: 'object',
+        description: 'Music-specific details including duration, album, and tracks',
+        properties: {
+          duration: {
+            bsonType: 'string',
+            description: 'Total duration (e.g., "45:30")'
+          },
+          album: {
+            bsonType: 'string',
+            description: 'Album name'
+          },
+          tracks: {
+            bsonType: 'array',
+            description: 'Array of track objects',
+            items: {
+              bsonType: 'object',
+              required: ['title'],
+              properties: {
+                title: {
+                  bsonType: 'string',
+                  description: 'Track title'
+                },
+                duration: {
+                  bsonType: 'string',
+                  description: 'Track duration'
+                },
+                trackNumber: {
+                  bsonType: 'int',
+                  description: 'Track number in album'
+                }
+              }
+            }
+          },
+          label: {
+            bsonType: 'string',
+            description: 'Record label'
+          }
+        }
+      };
+    }
+
+    // Export for use in other scripts
+    if (typeof module !== 'undefined' && module.exports) {
+      module.exports = {
+        generateContentSchema,
+        getMovieDetailsSchema,
+        getBookDetailsSchema,
+        getMusicDetailsSchema
+      };
+    }
+
+  # Flexible Schema Initialization - New Multi-Content-Type Schema
+  # Creates contentdb with support for Movies, Books, Music
+  init-schema-flexible.js: |
+    // MongoDB Flexible Schema Initialization Script
+    // This script creates the contentdb database with flexible schema structure
+    // supporting multiple content types (Movies, Books, Music, etc.)
+    // Run automatically when MongoDB container starts
+
+    // Load the schema template functions
+    load('/docker-entrypoint-initdb.d/schema-template.js');
+    load('/docker-entrypoint-initdb.d/content-types.js');
+
+    print('========================================');
+    print('Starting MongoDB Flexible Content Database Initialization');
+    print('========================================');
+
+    // Switch to the contentdb database (new flexible database)
+    db = db.getSiblingDB('contentdb');
+
+    print('Database: contentdb (flexible multi-content-type database)');
+    print('');
+
+    // ============================================
+    // 1. Create Content Types Metadata Collection
+    // ============================================
+    print('Creating content_types collection with metadata...');
+
+    db.createCollection('content_types');
+
+    // Insert content type metadata
+    db.content_types.insertMany([
+      {
+        code: "001",
+        name: "Movies",
+        icon: "🎬",
+        description: "Film and cinema content",
+        collectionName: "content_001",
+        createdAt: new Date(),
+        active: true
+      },
+      {
+        code: "002",
+        name: "Books",
+        icon: "📚",
+        description: "Written literature",
+        collectionName: "content_002",
+        createdAt: new Date(),
+        active: false  // Not yet implemented
+      },
+      {
+        code: "003",
+        name: "Music",
+        icon: "🎵",
+        description: "Audio recordings",
+        collectionName: "content_003",
+        createdAt: new Date(),
+        active: false  // Not yet implemented
+      }
+    ]);
+
+    print('Content types metadata inserted successfully');
+    print('');
+
+    // ============================================
+    // 2. Create Content Subtypes Collection
+    // ============================================
+    print('Creating content_subtypes collection...');
+
+    db.createCollection('content_subtypes');
+
+    // Insert subtype mappings for Movies
+    db.content_subtypes.insertMany([
+      { contentType: "001", code: "001", name: "Action", description: "Action and adventure films" },
+      { contentType: "001", code: "002", name: "Drama", description: "Dramatic storytelling" },
+      { contentType: "001", code: "003", name: "Comedy", description: "Humorous and light-hearted films" },
+      { contentType: "001", code: "004", name: "Romance", description: "Romantic films" },
+      { contentType: "001", code: "005", name: "Thriller", description: "Suspenseful and thrilling content" },
+      { contentType: "001", code: "006", name: "Horror", description: "Horror and scary films" },
+      { contentType: "001", code: "007", name: "Sci-Fi", description: "Science fiction" },
+      { contentType: "001", code: "008", name: "Crime", description: "Crime and detective stories" }
+    ]);
+
+    // Insert subtype mappings for Books (for future use)
+    db.content_subtypes.insertMany([
+      { contentType: "002", code: "001", name: "Fiction", description: "Fictional literature" },
+      { contentType: "002", code: "002", name: "Non-Fiction", description: "Non-fictional works" },
+      { contentType: "002", code: "003", name: "Biography", description: "Life stories" },
+      { contentType: "002", code: "004", name: "Mystery", description: "Mystery and detective novels" },
+      { contentType: "002", code: "005", name: "Fantasy", description: "Fantasy literature" }
+    ]);
+
+    // Insert subtype mappings for Music (for future use)
+    db.content_subtypes.insertMany([
+      { contentType: "003", code: "001", name: "Pop", description: "Popular music" },
+      { contentType: "003", code: "002", name: "Rock", description: "Rock music" },
+      { contentType: "003", code: "003", name: "Classical", description: "Classical music" },
+      { contentType: "003", code: "004", name: "Jazz", description: "Jazz music" },
+      { contentType: "003", code: "005", name: "Hip-Hop", description: "Hip-Hop and Rap" }
+    ]);
+
+    print('Content subtypes inserted successfully');
+    print('');
+
+    // ============================================
+    // 3. Create Movies Collection (content_001)
+    // ============================================
+    print('Creating content_001 collection for Movies with flexible schema...');
+
+    // Generate movie schema using the template with movie-specific details
+    const movieSchema = generateContentSchema("001", getMovieDetailsSchema());
+
+    // Create the collection with validation
+    db.createCollection('content_001', movieSchema);
+
+    print('Movies collection (content_001) created successfully with schema validation');
+    print('');
+
+    // ============================================
+    // 4. Create Indexes for Movies Collection
+    // ============================================
+    print('Creating indexes for content_001 (Movies) collection...');
+
+    // Index on title for fast title searches
+    db.content_001.createIndex(
+      { title: 1 },
+      { name: 'idx_title' }
+    );
+    print('✓ Index created on title');
+
+    // Index on year for year-based queries (descending for recent first)
+    db.content_001.createIndex(
+      { year: -1 },
+      { name: 'idx_year' }
+    );
+    print('✓ Index created on year');
+
+    // Index on contentType for filtering by content type
+    db.content_001.createIndex(
+      { contentType: 1 },
+      { name: 'idx_contentType' }
+    );
+    print('✓ Index created on contentType');
+
+    // Index on contentSubtype for genre-based searches
+    db.content_001.createIndex(
+      { contentSubtype: 1 },
+      { name: 'idx_contentSubtype' }
+    );
+    print('✓ Index created on contentSubtype');
+
+    // Index on songs.singer for singer-based searches
+    db.content_001.createIndex(
+      { 'details.songs.singer': 1 },
+      { name: 'idx_songs_singer' }
+    );
+    print('✓ Index created on details.songs.singer');
+
+    // Compound index on year and title
+    db.content_001.createIndex(
+      { year: -1, title: 1 },
+      { name: 'idx_year_title' }
+    );
+    print('✓ Compound index created on year and title');
+
+    // Text index for full-text search
+    // Includes title, creators, contributors, and song titles/singers
+    db.content_001.createIndex(
+      { 
+        title: 'text', 
+        creators: 'text', 
+        'contributors.name': 'text',
+        'details.songs.title': 'text',
+        'details.songs.singer': 'text'
+      },
+      {
+        name: 'idx_text_search',
+        weights: { 
+          title: 10,           // Highest weight for title
+          creators: 5,         // High weight for creators (directors)
+          'contributors.name': 3,  // Medium weight for contributors (actors)
+          'details.songs.title': 2,
+          'details.songs.singer': 2
+        },
+        default_language: 'none'  // Language-agnostic search
+      }
+    );
+    print('✓ Text index created for full-text search');
+
+    print('');
+    print('All indexes created successfully (7 indexes)');
+    print('');
+
+    // ============================================
+    // 5. Create Indexes for Metadata Collections
+    // ============================================
+    print('Creating indexes for metadata collections...');
+
+    // Index on content_types collection
+    db.content_types.createIndex(
+      { code: 1 },
+      { name: 'idx_code', unique: true }
+    );
+    print('✓ Index created on content_types.code');
+
+    // Compound index on content_subtypes collection
+    db.content_subtypes.createIndex(
+      { contentType: 1, code: 1 },
+      { name: 'idx_contentType_code', unique: true }
+    );
+    print('✓ Compound index created on content_subtypes');
+
+    print('');
+
+    // ============================================
+    // Summary
+    // ============================================
+    print('========================================');
+    print('Flexible Schema Initialization Completed Successfully!');
+    print('========================================');
+    print('Database: contentdb');
+    print('');
+    print('Collections Created:');
+    print('  1. content_types (metadata)');
+    print('  2. content_subtypes (metadata)');
+    print('  3. content_001 (Movies)');
+    print('');
+    print('Content Types:');
+    print('  - 001: Movies (Active) → content_001');
+    print('  - 002: Books (Inactive) → content_002');
+    print('  - 003: Music (Inactive) → content_003');
+    print('');
+    print('Indexes Created:');
+    print('  Movies Collection (content_001): 7 indexes');
+    print('  Metadata Collections: 2 indexes');
+    print('  Total: 9 indexes');
+    print('');
+    print('Field Mapping (Old → New):');
+    print('  movieName → title');
+    print('  director → creators (array)');
+    print('  actors/actresses → contributors (array with roles)');
+    print('  genre → contentSubtype (array of codes)');
+    print('  movieLanguage → language');
+    print('  ottPlatforms → platforms');
+    print('  songs → details.songs (with links per song)');
+    print('  boxOffice → details.boxOffice');
+    print('  runtime → details.runtime');
+    print('');
+    print('Schema Features:');
+    print('  ✓ Flexible content type support');
+    print('  ✓ Reusable schema template');
+    print('  ✓ Content-specific details field');
+    print('  ✓ Extensible metadata field');
+    print('  ✓ Moderate validation (backward compatible)');
+    print('  ✓ Warning-only validation action');
+    print('  ✓ Comprehensive indexing strategy');
+    print('  ✓ Full-text search support');
+    print('');
+    print('Next Steps:');
+    print('  1. Migrate existing data from moviesdb.movies to contentdb.content_001');
+    print('  2. Update application code to use new schema');
+    print('  3. Add Books collection (content_002) when ready');
+    print('  4. Add Music collection (content_003) when ready');
+    print('========================================');
+
 
 # Made with Bob

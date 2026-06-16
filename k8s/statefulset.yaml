@@ -5,7 +5,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mongodb
-  namespace: movies-db
+  namespace: content-db
   labels:
     app: mongodb
     component: database

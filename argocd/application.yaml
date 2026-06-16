@@ -30,8 +30,8 @@ spec:
   destination:
     # In-cluster deployment
     server: https://kubernetes.default.svc
-    # Target namespace from namespace.yaml
-    namespace: movies-db
+    # Target namespace - updated to content-db for flexible schema
+    namespace: content-db
   
   # Sync policy configuration
   syncPolicy:

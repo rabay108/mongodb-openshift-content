@@ -6,12 +6,12 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mongodb-pvc
-  namespace: movies-db
+  namespace: content-db
   labels:
     app: mongodb
     component: storage
   annotations:
-    description: "Persistent storage for MongoDB data directory"
+    description: "Persistent storage for MongoDB content database data directory"
 spec:
   # ReadWriteOnce: volume can be mounted as read-write by a single node
   accessModes:

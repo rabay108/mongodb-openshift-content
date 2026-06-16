@@ -1,15 +1,15 @@
 ---
-# Namespace for MongoDB Movies Database
+# Namespace for MongoDB Content Database
 # This namespace isolates the MongoDB deployment and related resources
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: movies-db
+  name: content-db
   labels:
     app: mongodb
     environment: production
-    purpose: movies-database
+    purpose: content-database
   annotations:
-    description: "Namespace for MongoDB movies database deployment"
+    description: "Namespace for MongoDB flexible content database deployment (Movies, Books, Music)"
 
 # Made with Bob
